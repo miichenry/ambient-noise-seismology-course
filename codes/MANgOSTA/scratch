@@ -1,0 +1,364 @@
+
+ def geninv(self, G, type='pinv', getmodres='Null'):
+
+        N = G.shape[0]
+        M = G.shape[1]
+
+        if type == 'pinv':
+
+            # Penrose pseudoinverse
+            Gig=np.linalg.pinv(G)
+
+        elif type == 'tsvd':
+
+            # Truncated SVD with L-curve
+            U, S, VT = np.linalg.svd(G)
+            V = VT.T
+
+            print("TSVD S=",S)
+
+            popt = self.getpopt(S)
+            Up = U[:, range(0, popt)]
+            Vp = V[:, range(0, popt)]
+            Sp = S[range(0, popt)]
+            iSp = np.diag(1. / Sp)
+            Gig = np.dot(np.dot(Vp, iSp), Up.T)
+
+        """
+        elif type == 'tsvd-l':
+
+            # Truncated SVD with L-curve
+            U, S, VT = np.linalg.svd(G)
+            V = VT.T
+
+            cond=1e9
+            idx=np.squeeze(np.argwhere(S<S[0]/cond))
+            print("idx=",idx," size=",idx.size)
+            if idx.size==0:
+                Mmax=min(N,M)
+            elif idx.size==1:
+                Mmax=idx
+            else:
+                Mmax=min(idx)
+
+            aic = np.zeros(Mmax)
+            for pmax in range(Mmax):
+                Up = U[:, range(0, pmax)]
+                Vp = V[:, range(0, pmax)]
+                Sp = S[range(0, pmax )]
+                iSp = np.diag(1. / Sp)
+                Gig = np.dot(np.dot(Vp, iSp), Up.T)
+                mod, res = getmodres(Gig)
+                rss = np.sqrt(np.sum(res ** 2))
+                aic[pmax] = np.log(rss) + (pmax+1) / N
+
+            popt = np.argmin(aic)
+            Up = U[:, range(0, popt)]
+            Vp = V[:, range(0, popt)]
+            Sp = S[range(0, popt)]
+            iSp = np.diag(1. / Sp)
+            Gig = np.dot(np.dot(Vp, iSp), Up.T)
+        """
+
+        return Gig
+
+
+   """
+    def getsynth(self, XS1, YS1, XS2, YS2, sc, m):
+
+        TS = np.empty(XS1.shape)
+        lVel = self.VM.coef2mod(sc, m)
+
+        if self.invtype=='linear':
+
+            NINT=100
+            for k in range(len(XS1)):
+                XP = np.linspace(XS1[k], XS2[k], NINT)
+                YP = np.linspace(YS1[k], YS2[k], NINT)
+                S = np.sqrt( (XS2[k]-XS1[k])**2 + (YS2[k]-YS1[k])**2 )
+                DS = S / NINT
+                LP = lVel(XP, YP)
+                DT = DS / np.exp(LP)
+                TS[k] = np.sum(DT)
+
+        else:
+
+            print("TTIME2D")
+            Vel = lambda xp, yp : np.exp(lVel(xp,yp))
+            xl = (np.arange(self.NPT_TT)+0.5)*self.DL - self.VM.size
+            xg, yg = np.meshgrid(xl, xl)
+            vg = Vel(xg, yg)
+            self.TT2D.setvelmod(vg)
+
+            NT=len(TS)
+            flag=np.full(NT, dtype=bool, fill_value=True)
+            while sum(flag)>0:
+
+                # Search first empty source
+                for i in range(NT):
+                    if flag[i]: break
+
+                xs = XS1[i]
+                ys = YS1[i]
+                #print("Computing traveltime for xs=",xs," ys=",ys)
+                self.TT2D.calc(xs,ys)
+                xr=[]
+                yr=[]
+                for i in range(NT):
+                    if XS1[i]==xs and YS1[i]==ys:
+                        xr.append(XS2[i])
+                        yr.append(YS2[i])
+                        flag[i]=False
+
+                xr = np.array(xr)
+                yr = np.array(yr)
+                TC = self.TT2D.gettime(xr, yr)
+                k=0
+                for i in range(NT):
+                    if XS1[i] == xs and YS1[i] == ys:
+                        TS[i] = TC[k]
+                        k = k + 1
+
+        return TS
+    """
+
+"""
+            # Initial model
+            m0 = self.VM.homo2coef(0, np.log(avgv))
+            mi = m0
+            print("m0=",m0)
+
+            rays = self.getrays(XS1, YS1, XS2, YS2, 0, m0)
+            T0 = self.getsynth(N, 0, m0, rays)
+            res = T0-TS
+            RSS0 = np.sum(res**2)
+
+            for sc in range(self.maxscale):
+
+                M=mi.size
+
+                # Non-linear loop
+                ndm=1e20
+                while ndm>self.mindm:
+
+                    print(">>>>>>>>>>>>>>>>>>")
+                    print("sc=",sc," mi=",mi," ndm=",ndm)
+
+                    # Residuals
+                    rays = self.getrays(XS1, YS1, XS2, YS2, sc, mi)
+                    #print(rays)
+                    T0 = self.getsynth(N, sc, mi, rays)
+                    #print("TS=", TS)
+                    #print(TS)
+                    #print("T0=",T0)
+                    DT = TS - T0
+                    #print("DT=",DT)
+                    #exit(1)
+
+                    # Kernel
+                    print("KERNEL N=",N," M=",M)
+                    DELTAM=1e-4
+                    G=np.empty((N,M))
+                    for k in range(M):
+
+                        # Calc residuals and G
+                        mod=deepcopy(mi)
+                        mod[k]=mod[k]+DELTAM
+                        tk=self.getsynth(N, sc, mod, rays)
+                        tk=(tk-T0)/DELTAM
+                        G[:,k]=tk.T
+
+                    #print(G)
+
+                    #gmri = lambda Gig : self.gmr(Gig, TS, sc, mi, XS1, YS1, XS2, YS2)
+                    Gig=self.geninv(G, type='tsvd')
+                    #Gig = self.geninv(G, type='pinv')
+
+                    #print("GIG")
+                    #print(Gig)
+
+                    dm = np.dot(Gig,DT)
+                    print("m0=", mi)
+                    print("dm=", dm)
+                    mi = mi + dm
+                    print("mi=", mi)
+
+                    #ndm=np.linalg.norm(dm)/np.linalg.norm(mi)
+                    ndm=np.max(np.abs(dm)/np.abs(mi))
+                    print(np.abs(dm)/np.abs(mi))
+                    print("ndm=",ndm)
+
+                print(">>>>> WRITERES")
+                self.writeres(XS1, YS1, XS2, YS2, TS, per, sc, mi, G, RSS0)
+                print(">>>>> WRITESPECT")
+                self.writespectr(G, per, sc)
+
+                ofile="%s/tomo_%s_%3.2f_%d.dat" % (self.tomodir,self.comp,per,sc+1)
+                print(">>>>> WRITEMOD")
+                self.VM.writemod(ofile, 200., sc, mi, XS1, YS1, XS2, YS2)
+
+                if sc<self.maxscale-1:
+                    print("scale upgrade")
+                    mi1=self.scaleupgrade(mi,sc,sc+1)
+                    #print("mi1=",mi1)
+                    mi=mi1
+"""
+
+    """
+    def gmr(self, Gig, TS, sc, m0, XS1, YS1, XS2, YS2):
+
+        T0 = self.getsynth(XS1, YS1, XS2, YS2, sc, m0)
+
+        DT = TS - T0
+        dm = np.dot(Gig,DT)
+        mi = m0 + dm
+        Ti = self.getsynth(XS1, YS1, XS2, YS2, sc, mi)
+
+        res = Ti - TS
+
+        return dm, res
+    """
+
+    """
+    def getpopt(self, S):
+
+        # Cumulative
+        sp = np.cumsum(S)
+        sp = sp / np.sum(S)
+        print("sp=", sp, sp > (self.tsvdthr1 / 100.))
+        idx = np.argwhere(sp > (self.tsvdthr1 / 100.))
+        if len(idx)>0:
+            popt1 = min(idx)[0]
+        else:
+            popt1 = len(S) - 1
+        print("popt1=", popt1)
+
+        # Maximum
+        sp=S/S[0]
+        print("sp=", sp, sp < (self.tsvdthr2 / 100.))
+        idx = np.argwhere(sp < (self.tsvdthr2 / 100.))
+        if len(idx)>0:
+            popt2 = min(idx)[0]
+        else:
+            popt2 = len(S) - 1
+        print("popt2=", popt2)
+
+        return np.minimum(popt1, popt2)
+    """
+
+    def scaleupgrade(self, m, sc1, sc2):
+
+        print(">>>>>>> scaleupgrade")
+        V=self.VM.coef2mod(sc1,m)
+        m2=self.VM.mod2coef(V, sc2)
+
+        return m2
+
+
+
+
+
+
+        # AIC
+        U, S, VT = np.linalg.svd(G)
+        NE=self.getpopt(S)
+        NP=len(mod)
+        ND=len(XS1)
+        res=TS-sy
+        rss=np.sum(res**2)
+        aic = ND*np.log(rss)+2*NP
+        f.write("AIC %d %f %d %d  %f\n" % (ND,rss,NP,NE,aic) )
+
+"""
+    def ltsvd(self, G, res):
+
+        print("L-TSVD")
+
+        # Truncated SVD with L-curve
+        U, S, VT = np.linalg.svd(G)
+        V = VT.T
+
+        #print("G ",G.shape)
+        #print("U ", U.shape)
+        #print("S ", S.shape)
+        #print("V ", V.shape)
+
+        maxp=len(S)
+
+        if maxp>1:
+
+            lx=[]
+            ly=[]
+            lp=[]
+            for p in range(1,maxp):
+                Sp = S[range(0, p)]
+                if Sp[-1]/Sp[0]<1e-10: break
+
+                Up = U[:, range(0, p)]
+                Vp = V[:, range(0, p)]
+                iSp = np.diag(1. / Sp)
+                Gig = np.dot(np.dot(Vp, iSp), Up.T)
+                mp = np.dot(Gig,res)
+                sy = np.dot(G,mp)-res
+
+                mp = np.linalg.norm(mp,2)
+                sy = np.linalg.norm(sy,2)
+
+                lx.append(sy)
+                ly.append(mp)
+                lp.append(p)
+
+            # Curvature
+            lx = np.log(np.array(lx))
+            ly = np.log(np.array(ly))
+
+            lx1 = np.zeros(len(lx))
+            lx2 = np.zeros(len(lx))
+            ly1 = np.zeros(len(lx))
+            ly2 = np.zeros(len(lx))
+
+            for i in range(1,len(lx)-1):
+                lx1[i] = (lx[i + 1] - lx[i - 1]) / 2
+                ly1[i] = (ly[i + 1] - ly[i - 1]) / 2
+
+                lx2[i] = lx[i - 1] + lx[i + 1] - 2 * lx[i]
+                ly2[i] = ly[i - 1] + ly[i + 1] - 2 * ly[i]
+
+            curv = -(lx1*ly2 - lx2*ly1) / np.power(lx1**2 + ly1**2, 1.5)
+
+            curv[0] = 0
+            curv[-1] = 0
+
+            #print("curv=",curv)
+
+            idx=np.argmax(curv)
+            popt=lp[idx]
+            print("idx=",idx," popt=", popt, " curv=",curv[idx])
+
+            import matplotlib.pyplot as plt
+
+            plt.subplot(1,2,1)
+            plt.plot(lp,curv,'kx')
+
+            plt.subplot(1,2,2)
+            plt.plot(lx,ly,'ko')
+            plt.plot(lx[0],ly[0],'ro')
+            plt.plot(lx[-1], ly[-1], 'bo')
+            plt.plot(lx[idx], ly[idx], 'go')
+            #plt.xscale('log')
+            #plt.yscale('log')
+
+            plt.show()
+
+        else:
+            popt=1
+
+        print("popt=",popt)
+        Up = U[:, range(0, popt)]
+        Vp = V[:, range(0, popt)]
+        Sp = S[range(0, popt)]
+        iSp = np.diag(1. / Sp)
+        Gig = np.dot(np.dot(Vp, iSp), Up.T)
+
+        return Gig
+"""

@@ -17,19 +17,20 @@ A comprehensive, semester-long Jupyter notebook course on **ambient noise seismo
 | 7 | Stacking Methods |
 | 8 | Optimal Processing of Noise Correlations |
 | 9 | Surface Wave Dispersion Analysis (FTAN) |
-| 10 | Ambient Noise Tomography: Inversion |
-| 11 | Seismic Interferometry Principles |
-| 12 | Seismic Velocity Changes (dv/v) Monitoring |
-| 13 | HVSR / MHVSR Method |
-| 14 | NoisePy: Large-Scale Processing |
-| 15 | Applications and Case Studies |
-| 16 | Dense Arrays, Advanced Topics, and Exercises |
+| 10 | Ambient Noise Tomography: MANgOSTA & BayesBay |
+| 11 | Depth Inversion: BayHunter |
+| 12 | Seismic Interferometry Principles |
+| 13 | Seismic Velocity Changes (dv/v) Monitoring |
+| 14 | HVSR / MHVSR Method |
+| 15 | NoisePy: Large-Scale Processing |
+| 16 | Applications and Case Studies |
+| 17 | Dense Arrays, Advanced Topics, and Exercises |
 
 ## Features
 
 - **Theory + Practice**: Each module pairs mathematical foundations with interactive Python code
 - **30+ citations** from the ambient noise seismology literature
-- **Working implementations** of key algorithms: temporal normalization, spectral whitening, cross-correlation, stacking (linear, PWS, robust), FTAN, stretching dv/v, HVSR, 2D tomographic inversion
+- **Working implementations** of key algorithms: temporal normalization, spectral whitening, cross-correlation, stacking (linear, PWS, robust), FTAN, 2D tomographic inversion, Bayesian depth inversion, stretching dv/v, HVSR
 - **Real data examples** using IRIS FDSN web services (ObsPy)
 - **Synthetic demonstrations** to build physical intuition
 - **Semester exercises** for coursework
@@ -41,7 +42,9 @@ A comprehensive, semester-long Jupyter notebook course on **ambient noise seismo
 - Fichtner et al. (2017, 2020) — Optimal processing framework
 - Jiang & Denolle (2020) — NoisePy
 - Cox et al. (2020) — HVSR lognormal statistics
-- Cabrera-Pérez et al. (2023) — La Palma ANT
+- Cabrera-Pérez et al. (2021, 2023) — MANgOSTA multiscale ANT
+- Magrini, He & Sambridge (2025) — BayesBay Bayesian inversion
+- Dreiling & Tilmann (2019) — BayHunter depth inversion
 - Ryberg et al. (2022) — LARGE-N mineral exploration
 - Stehly et al. (2024) — Noise source dynamics
 

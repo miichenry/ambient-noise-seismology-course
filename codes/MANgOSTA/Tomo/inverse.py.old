@@ -1,0 +1,431 @@
+
+import numpy as np
+
+class Inverse:
+
+    def __init__(self, params):
+
+        self.type=params['invtype']
+
+    def settickhonov(self, L):
+        self.LL = np.dot(L.T, L)
+
+    def getLcurve_sel(self, lm, ld):
+
+        llm = np.log(lm)
+        lld = np.log(ld)
+        llm = (llm - np.min(llm)) / (np.max(llm) - np.min(llm))
+        lld = (lld - np.min(lld)) / (np.max(lld) - np.min(lld))
+        dist = np.sqrt(llm**2 + lld**2)
+        return np.argmin(dist)
+
+    def ltsvd(self, G, m0, res, valid):
+
+        print("L-TSVD")
+
+        # Truncated SVD with L-curve
+        U, S, VT = np.linalg.svd(G)
+        V = VT.T
+
+        ND = G.shape[0]
+
+        maxp=len(S)
+
+        if maxp>1:
+
+            lm = []
+            ld = []
+            lp = []
+            for p in range(1,maxp):
+
+                Sp = S[range(0, p)]
+                if Sp[-1]/Sp[0]<1e-10: break
+
+                Up = U[:, range(0, p)]
+                Vp = V[:, range(0, p)]
+                iSp = np.diag(1. / Sp)
+                Gig = np.dot(np.dot(Vp, iSp), Up.T)
+                mest = np.dot(Gig,res)
+                sy = np.dot(G,mest)-res
+
+                mfinal=m0-mest
+                if not valid(mfinal): break
+
+                lm.append(np.linalg.norm(mest))
+                ld.append(np.linalg.norm(sy))
+                lp.append(p)
+
+            if lp==[]:
+                return None, False
+
+            idx = self.getLcurve_sel(lm,ld)
+            popt = lp[idx]
+            #print("idx=", idx, " popt=", popt)
+
+        else:
+            popt=1
+
+        print("popt=",popt)
+        Up = U[:, range(0, popt)]
+        Vp = V[:, range(0, popt)]
+        Sp = S[range(0, popt)]
+        iSp = np.diag(1. / Sp)
+        Gig = np.dot(np.dot(Vp, iSp), Up.T)
+
+        dm = np.dot(Gig, res)
+        mfinal = m0 - dm
+
+        if not valid(mfinal): return Gig, False
+
+        return Gig, True
+
+    def gtsvd(self, G, m0, res, valid):
+
+        print("G-TSVD")
+
+        # Truncated SVD with GCV
+        U, S, VT = np.linalg.svd(G)
+        V = VT.T
+
+        ND = G.shape[0]
+
+        maxp=len(S)
+
+        if maxp>1:
+
+            gcv = []
+            lp = []
+            for p in range(1,maxp):
+
+                Sp = S[range(0, p)]
+                if Sp[-1]/Sp[0]<1e-10: break
+
+                Up = U[:, range(0, p)]
+                Vp = V[:, range(0, p)]
+                iSp = np.diag(1. / Sp)
+                Gig = np.dot(np.dot(Vp, iSp), Up.T)
+                mest = np.dot(Gig,res)
+                sy = np.dot(G,mest)-res
+
+                mfinal=m0-mest
+                if not valid(mfinal): break
+
+                A = np.dot(G, Gig)
+                tr = np.sum(1. - np.diag(A)) ** 2
+                gcv.append(np.linalg.norm(sy) ** 2 / tr)
+                lp.append(p)
+
+            if lp==[]:
+                return None, False
+
+            idx = np.argmin(gcv)
+            popt = lp[idx]
+            #print("idx=", idx, " popt=", popt)
+
+        else:
+            popt=1
+
+        print("popt=",popt)
+        Up = U[:, range(0, popt)]
+        Vp = V[:, range(0, popt)]
+        Sp = S[range(0, popt)]
+        iSp = np.diag(1. / Sp)
+        Gig = np.dot(np.dot(Vp, iSp), Up.T)
+
+        dm = np.dot(Gig, res)
+        mfinal = m0 - dm
+
+        if not valid(mfinal): return Gig, False
+
+        return Gig, True
+
+    def ldlsq(self, G, m0, res, valid):
+
+        print("Damped Least Squares with L-curve")
+
+        M = G.shape[1]
+
+        eps2r = np.flipud(np.logspace(-10, 15, 1000))
+
+        G1=np.dot(G.T,G)
+
+        lm = []
+        ld = []
+        leps = []
+        for i in range(len(eps2r)):
+
+            G2 = G1 + eps2r[i] * np.eye(M)
+
+            Gig = np.dot(np.linalg.inv(G2),G.T)
+            mest = np.dot(Gig, res)
+            sy = np.dot(G, mest) - res
+
+            mfinal = m0 - mest
+            if not valid(mfinal): break
+
+            lm.append(np.linalg.norm(mest))
+            ld.append(np.linalg.norm(sy))
+            leps.append(eps2r[i])
+
+        #print("leps=",leps)
+        if leps==[]:
+            print("L-DLSQ leps=[]")
+            return None, False
+
+        """
+        # Curvature
+        lm = np.array(lm)
+        ld = np.array(ld)
+        curv=np.zeros(lm.shape)
+        for i in range(1, len(lm)-1):
+            zeta1 = (ld[i + 1] - ld[i - 1]) / 2
+            zeta2 = (ld[i + 1] + ld[i - 1] - 2 * ld[i])
+            eta1 = (lm[i + 1] - lm[i - 1]) / 2
+            eta2 = (lm[i + 1] + lm[i - 1] - 2 * lm[i])
+            curv_num = zeta1 * eta2 - zeta2 * eta1
+            curv_den = np.power(zeta1 ** 2 + eta1 ** 2, 1.5)
+            curv[i] = curv_num / curv_den
+
+        sm = np.array([0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25])
+        curv_sm = np.convolve(curv, sm, mode='same')
+
+        idx=np.argmax(curv_sm)
+        """
+        idx = self.getLcurve_sel(lm, ld)
+        eps2 = eps2r[idx]
+        print("best eps2=", eps2)
+
+        G2 = G1 + eps2 * np.eye(M)
+
+        Gig = np.dot(np.linalg.inv(G2), G.T)
+
+        return Gig, True
+
+    def llema(self, G, m0, res, valid):
+
+        print("Levemberg-Marquadt with L-curve")
+
+        M = G.shape[1]
+
+        eps2r = np.flipud(np.logspace(-10, 15, 10))
+
+        G1=np.dot(G.T,G)
+        DLM = np.diag(G1)
+        print("DLM=",DLM)
+
+        lm = []
+        ld = []
+        leps = []
+        for i in range(len(eps2r)):
+
+            G2 = G1 + eps2r[i] * np.diag(DLM)
+            #cc = np.linalg.cond(G2)
+            #if np.isinf(cc): continue
+            #print(eps2r[i], cc, flush=True)
+            #Gig = np.dot(np.linalg.inv(G2),G.T)
+            Gig = np.dot(np.linalg.pinv(G2), G.T)
+            mest = np.dot(Gig, res)
+            sy = np.dot(G, mest) - res
+
+            mfinal = m0 - mest
+            if not valid(mfinal): break
+
+            lm.append(np.linalg.norm(mest))
+            ld.append(np.linalg.norm(sy))
+            leps.append(eps2r[i])
+
+        #print("leps=",leps)
+        if leps==[]:
+            print("L-LEMA leps=[]")
+            return None, False
+
+        idx = self.getLcurve_sel(lm, ld)
+        eps2 = eps2r[idx]
+        print("best eps2=", eps2)
+
+        G2 = G1 + eps2 * np.eye(M)
+
+        Gig = np.dot(np.linalg.inv(G2), G.T)
+
+        return Gig, True
+
+    def gdlsq(self, G, m0, res, valid):
+
+        print("Damped Least Squares with GCV")
+
+        M = G.shape[1]
+
+        eps2r = np.flipud(np.logspace(-10, 15, 1000))
+
+        G1=np.dot(G.T,G)
+
+        gcv = []
+        leps = []
+        for i in range(len(eps2r)):
+
+            G2 = G1 + eps2r[i] * np.eye(M)
+
+            Gig = np.dot(np.linalg.inv(G2),G.T)
+            mest = np.dot(Gig, res)
+            sy = np.dot(G, mest) - res
+
+            mfinal = m0 - mest
+            if not valid(mfinal): break
+
+            A = np.dot(G, Gig)
+            tr = np.sum(1. - np.diag(A)) ** 2
+            gcv.append(np.linalg.norm(sy) ** 2 / tr)
+            leps.append(eps2r[i])
+
+        #print("leps=",leps)
+        if leps==[]:
+            print("L-DLSQ leps=[]")
+            return None, False
+
+        idx=np.argmin(gcv)
+        eps2 = eps2r[idx]
+        print("best eps2=", eps2)
+
+        G2 = G1 + eps2 * np.eye(M)
+        Gig = np.dot(np.linalg.inv(G2), G.T)
+
+        return Gig, True
+
+    def ltikh(self, G, m0, res, valid):
+
+        print("Tikhonov regularization with L-curve")
+
+        M = G.shape[1]
+
+        eps2r=np.flipud(np.logspace(-10,15,1000))
+
+        G1=np.dot(G.T,G)
+
+        lm = []
+        ld = []
+        leps = []
+        for i in range(len(eps2r)):
+
+            G2 = G1 + eps2r[i] * self.LL
+
+            Gig = np.dot(np.linalg.inv(G2),G.T)
+            mest = np.dot(Gig, res)
+            sy = np.dot(G, mest) - res
+
+            mfinal = m0 - mest
+
+            if not valid(mfinal):
+                print("last eps=",eps2r[i])
+                break
+
+            mest=np.dot(self.LL,mest)
+            lm.append(np.linalg.norm(mest))
+            ld.append(np.linalg.norm(sy))
+            leps.append(eps2r[i])
+
+        if leps==[]:
+            print("L-TIKH leps=[]")
+            return None, False
+
+        """
+        # Curvature
+        lm = np.array(lm)
+        ld = np.array(ld)
+        curv = np.zeros(lm.shape)
+        for i in range(1, len(lm) - 1):
+            zeta1 = (ld[i + 1] - ld[i - 1]) / 2
+            zeta2 = (ld[i + 1] + ld[i - 1] - 2 * ld[i])
+            eta1 = (lm[i + 1] - lm[i - 1]) / 2
+            eta2 = (lm[i + 1] + lm[i - 1] - 2 * lm[i])
+            curv_num = zeta1 * eta2 - zeta2 * eta1
+            curv_den = np.power(zeta1 ** 2 + eta1 ** 2, 1.5)
+            curv[i] = curv_num / curv_den
+
+        sm = np.array([0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25])
+        curv_sm = np.convolve(curv, sm, mode='same')
+
+        idx = np.argmax(curv_sm)
+        """
+        idx = self.getLcurve_sel(lm, ld)
+        eps2 = eps2r[idx]
+        print("best eps2=%g" % eps2)
+
+        G2 = G1 + eps2 * self.LL
+
+        Gig = np.dot(np.linalg.inv(G2), G.T)
+
+        return Gig, True
+
+    def gtikh(self, G, m0, res, valid):
+
+        print("Tikhonov regularization with GCV")
+
+        M = G.shape[1]
+
+        eps2r=np.flipud(np.logspace(-10,15,1000))
+
+        G1=np.dot(G.T,G)
+
+        gcv = []
+        leps = []
+        for i in range(len(eps2r)):
+
+            G2 = G1 + eps2r[i] * self.LL
+
+            Gig = np.dot(np.linalg.inv(G2),G.T)
+            mest = np.dot(Gig, res)
+            sy = np.dot(G, mest) - res
+
+            mfinal = m0 - mest
+
+            if not valid(mfinal):
+                print("last eps=",eps2r[i])
+                break
+
+            A = np.dot(G, Gig)
+            tr = np.sum(1. - np.diag(A)) ** 2
+            gcv.append(np.linalg.norm(sy) ** 2 / tr)
+            leps.append(eps2r[i])
+
+        if leps==[]:
+            print("G-TIKH leps=[]")
+            return None, False
+
+        idx = np.argmin(gcv)
+        eps2 = eps2r[idx]
+        print("best eps2=", eps2)
+
+        G2 = G1 + eps2 * self.LL
+
+        Gig = np.dot(np.linalg.inv(G2), G.T)
+
+        return Gig, True
+
+    def getinverse(self, G, m0, res, valid=None):
+
+        if self.type == "L-TSVD":
+            Gig, flag = self.ltsvd(G, m0, res, valid)
+
+        elif self.type == "G-TSVD":
+            Gig, flag = self.gtsvd(G, m0, res, valid)
+
+        elif self.type == "L-DLSQ":
+            Gig, flag = self.ldlsq(G, m0, res, valid)
+
+        elif self.type == "L-LEMA":
+            Gig, flag = self.llema(G, m0, res, valid)
+
+        elif self.type == "G-DLSQ":
+            Gig, flag = self.gdlsq(G, m0, res, valid)
+
+        elif self.type == "L-TIKH":
+            Gig, flag = self.ltikh(G, m0, res, valid)
+
+        elif self.type == "G-TIKH":
+            Gig, flag = self.gtikh(G, m0, res, valid)
+
+        else:
+            print("Wrong inversione type:",self.type)
+            exit(1)
+
+        return Gig, flag
