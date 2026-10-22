@@ -349,21 +349,18 @@
 <body>
 
 <div class="navbar">
-  <span>University of Geneva &mdash; Earth Sciences</span>
-  <span>Moodle</span>
-</div>
-<div class="breadcrumb">
-  <a href="#">Home</a> / <a href="#">Courses</a> / <a href="#">ESCI-4201</a> / <a href="#">Quizzes</a> / Ambient Noise Seismology Assessment
+  <span>Ambient Noise Seismology</span>
+  <span></span>
 </div>
 
 <div class="container">
   <h1>Quiz: Ambient Noise Seismology</h1>
-  <p class="subtitle">Assessment &mdash; 20 questions &bull; 15 minutes &bull; 1 attempt allowed</p>
+  <p class="subtitle">20 questions</p>
 
   <!-- Registration -->
   <div id="registration">
     <h2>Attempt quiz</h2>
-    <p style="margin-bottom:15px;color:#6a737b;font-size:13px;">This quiz contains 20 multiple-choice questions covering ambient noise seismology fundamentals.<br>Time limit: 15 minutes. Enter your full name to begin.</p>
+    <p style="margin-bottom:15px;color:#6a737b;font-size:13px;">Enter your full name to begin.</p>
     <div style="margin-bottom:8px;">
       <label for="nameInput" style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;text-align:left;max-width:280px;margin-left:auto;margin-right:auto;">Full name</label>
       <input type="text" id="nameInput" placeholder="First Last" autofocus>
@@ -377,7 +374,6 @@
 
   <!-- Quiz -->
   <div id="quiz" style="display:none;">
-    <div class="timer" id="timer">15:00</div>
     <div class="progress-text">
       <span id="progressLabel">Question 1 of 20</span>
       <span id="scoreLabel">Score: 0</span>
@@ -702,8 +698,6 @@ function startQuiz() {
   document.getElementById('registration').style.display = 'none';
   document.getElementById('quiz').style.display = 'block';
   startTime = Date.now();
-  timeRemaining = 15 * 60;
-  timerInterval = setInterval(updateTimer, 1000);
   showQuestion(0);
 }
 
