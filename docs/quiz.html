@@ -587,6 +587,12 @@ const questions = [
   }
 ];
 
+// ============================================================
+// BACKEND CONFIG — paste your Google Apps Script URL here
+// ============================================================
+const BACKEND_URL = '';  // <-- PASTE YOUR URL HERE
+// ============================================================
+
 let currentQ = 0;
 let answers = new Array(questions.length).fill(null);
 let answered = new Array(questions.length).fill(false);
@@ -594,6 +600,47 @@ let playerName = "";
 let timerInterval = null;
 let startTime = 0;
 let timeRemaining = 15 * 60; // 15 minutes
+let remoteLeaderboard = [];
+
+function hasBackend() { return BACKEND_URL.length > 0; }
+
+async function fetchLeaderboard() {
+  if (!hasBackend()) return JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+  try {
+    const resp = await fetch(BACKEND_URL);
+    const data = await resp.json();
+    remoteLeaderboard = data;
+    return data;
+  } catch (err) {
+    console.warn('Backend fetch failed, using localStorage', err);
+    return JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+  }
+}
+
+async function saveToBackend(entry) {
+  // Always save locally
+  let lb = JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+  lb.push(entry);
+  lb.sort((a, b) => b.pct - a.pct || a.time - b.time);
+  localStorage.setItem('ant_quiz_leaderboard', JSON.stringify(lb));
+
+  if (!hasBackend()) return lb;
+
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    // Fetch updated leaderboard after save
+    await new Promise(r => setTimeout(r, 1500)); // wait for sheet to update
+    return await fetchLeaderboard();
+  } catch (err) {
+    console.warn('Backend save failed, using localStorage', err);
+    return lb;
+  }
+}
 
 function startQuiz() {
   playerName = document.getElementById('nameInput').value.trim();
@@ -691,7 +738,7 @@ function prevQuestion() {
   if (currentQ > 0) showQuestion(currentQ - 1);
 }
 
-function finishQuiz() {
+async function finishQuiz() {
   clearInterval(timerInterval);
   const elapsed = Math.round((Date.now() - startTime) / 1000);
   const score = answers.filter((a, i) => a === questions[i].correct).length;
@@ -699,12 +746,16 @@ function finishQuiz() {
   const minutes = Math.floor(elapsed / 60);
   const seconds = elapsed % 60;
 
-  // Save to leaderboard
-  let lb = JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+  // Show loading state
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').innerHTML = `<div style="text-align:center;padding:40px;">
+    <h2>Submitting results...</h2>
+    <p style="color:#7f8c8d;">Saving your score to the shared leaderboard</p></div>`;
+
+  // Save to backend + localStorage
   const entry = { name: playerName, score, total: questions.length, pct, time: elapsed, date: new Date().toISOString() };
-  lb.push(entry);
-  lb.sort((a, b) => b.pct - a.pct || a.time - b.time);
-  localStorage.setItem('ant_quiz_leaderboard', JSON.stringify(lb));
+  const lb = await saveToBackend(entry);
 
   // Determine score class
   let scoreClass = 'score-needs-work';
@@ -746,7 +797,7 @@ function finishQuiz() {
   questions.forEach((q, i) => {
     const correct = answers[i] === q.correct;
     const letters = ['A', 'B', 'C', 'D'];
-    const yourAns = answers[i] !== null ? letters[answers[i]] : '—';
+    const yourAns = answers[i] !== null ? letters[answers[i]] : '\u2014';
     const correctAns = letters[q.correct];
     html += `<div class="review-item ${correct ? 'review-correct' : 'review-wrong'}">
       <span class="review-icon">${correct ? '&#x2705;' : '&#x274c;'}</span>
@@ -757,9 +808,10 @@ function finishQuiz() {
   html += `</div>`;
 
   // Leaderboard
-  html += `<div class="leaderboard"><h3>&#127942; Leaderboard</h3>`;
+  const backendLabel = hasBackend() ? ' (live \u2014 shared across all participants)' : ' (local browser only \u2014 set up backend for shared scores)';
+  html += `<div class="leaderboard" id="leaderboardSection"><h3>&#127942; Leaderboard${backendLabel}</h3>`;
   lb.forEach((e, i) => {
-    const isCurrent = e.name === playerName && e.date === entry.date;
+    const isCurrent = e.name === playerName && Math.abs(e.pct - pct) < 1 && Math.abs(e.time - elapsed) < 5;
     const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
     const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
     html += `<div class="lb-entry ${isCurrent ? 'current' : ''}">
@@ -771,23 +823,46 @@ function finishQuiz() {
   });
   html += `</div>`;
 
-  // Admin: clear leaderboard
-  html += `<div class="admin-toggle"><a onclick="clearLeaderboard()">Clear leaderboard</a>
-    &nbsp;|&nbsp;<a onclick="location.reload()">Take again</a></div>`;
+  // Controls
+  html += `<div class="admin-toggle">
+    <a onclick="refreshLeaderboard()">Refresh leaderboard</a>
+    &nbsp;|&nbsp;<a onclick="location.reload()">Take again</a>
+    &nbsp;|&nbsp;<a onclick="clearLeaderboard()">Clear local data</a>
+  </div>`;
 
-  document.getElementById('quiz').style.display = 'none';
-  document.getElementById('results').style.display = 'block';
   document.getElementById('results').innerHTML = html;
 }
 
-function toggleLeaderboard() {
+async function refreshLeaderboard() {
+  const section = document.getElementById('leaderboardSection');
+  if (!section) return;
+  section.innerHTML = '<h3>&#127942; Refreshing...</h3>';
+  const lb = await fetchLeaderboard();
+  let html = `<h3>&#127942; Leaderboard (${lb.length} entries)</h3>`;
+  lb.forEach((e, i) => {
+    const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
+    const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
+    const isCurrent = e.name === playerName;
+    html += `<div class="lb-entry ${isCurrent ? 'current' : ''}">
+      <span class="lb-rank">${medal}</span>
+      <span class="lb-name">${e.name}</span>
+      <span class="lb-score">${e.pct}%</span>
+      <span class="lb-time">${t}</span>
+    </div>`;
+  });
+  section.innerHTML = html;
+}
+
+async function toggleLeaderboard() {
   const el = document.getElementById('preLeaderboard');
   if (el.style.display === 'none') {
-    let lb = JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+    el.innerHTML = '<p style="color:#7f8c8d;">Loading...</p>';
+    el.style.display = 'block';
+    const lb = await fetchLeaderboard();
     if (lb.length === 0) {
-      el.innerHTML = '<p style="color:#7f8c8d;">No results yet.</p>';
+      el.innerHTML = '<p style="color:#7f8c8d;">No results yet. Be the first to take the quiz!</p>';
     } else {
-      let html = '<div class="leaderboard"><h3>&#127942; Leaderboard</h3>';
+      let html = '<div class="leaderboard"><h3>&#127942; Leaderboard (' + lb.length + ' entries)</h3>';
       lb.forEach((e, i) => {
         const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
         const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
@@ -801,14 +876,13 @@ function toggleLeaderboard() {
       html += '</div>';
       el.innerHTML = html;
     }
-    el.style.display = 'block';
   } else {
     el.style.display = 'none';
   }
 }
 
 function clearLeaderboard() {
-  if (confirm('Clear all leaderboard data?')) {
+  if (confirm('Clear local leaderboard data?')) {
     localStorage.removeItem('ant_quiz_leaderboard');
     location.reload();
   }
