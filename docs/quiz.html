@@ -355,7 +355,7 @@
 
 <div class="container">
   <h1>Quiz: Ambient Noise Seismology</h1>
-  <p class="subtitle">20 questions</p>
+  <p class="subtitle">21 questions</p>
 
   <!-- Registration -->
   <div id="registration">
@@ -375,7 +375,7 @@
   <!-- Quiz -->
   <div id="quiz" style="display:none;">
     <div class="progress-text">
-      <span id="progressLabel">Question 1 of 20</span>
+      <span id="progressLabel">Question 1 of 21</span>
       <span id="scoreLabel">Score: 0</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -404,34 +404,34 @@ const questions = [
     category: "Cross-Correlation",
     question: "What is a cross-correlation compared to a convolution?",
     options: [
-      "Cross-correlation multiplies signals in the frequency domain; convolution adds them",
-      "Cross-correlation measures similarity as a function of time shift; convolution folds and integrates one signal over another (equivalent to correlation with one signal time-reversed)",
-      "They are the same operation",
-      "Convolution measures similarity; cross-correlation filters signals"
+      "Cross-correlation measures similarity vs. time shift; convolution is the same but time-reversed",
+      "Cross-correlation multiplies signals in the frequency domain; convolution adds them directly",
+      "They are mathematically identical operations that always produce the exact same output",
+      "Convolution measures waveform similarity over time; cross-correlation applies a spectral filter"
     ],
-    correct: 1,
+    correct: 0,
     explanation: "Cross-correlation slides one signal over another to measure similarity at each lag. Convolution does the same but with one signal time-reversed (or equivalently, conjugated in the frequency domain). In the frequency domain: correlation = A* x B, convolution = A x B."
   },
   {
     category: "Cross-Correlation",
     question: "Why do we stack (average) many daily cross-correlations?",
     options: [
-      "To increase the sampling rate of the signal",
-      "To reduce incoherent noise and enhance the coherent Green's function estimate",
-      "To convert velocity to displacement seismograms",
-      "To remove the instrument response"
+      "To increase the effective sampling rate of the recorded continuous signal",
+      "To convert velocity seismograms into displacement seismograms automatically",
+      "To reduce incoherent noise and enhance the coherent Green's function",
+      "To remove the instrument response from each individual daily record"
     ],
-    correct: 1,
-    explanation: "Individual daily CCFs are noisy. Stacking hundreds of days reinforces the coherent part (the empirical Green's function) while the random noise cancels out, improving the signal-to-noise ratio (SNR)."
+    correct: 2,
+    explanation: "Individual daily CCFs are noisy. Stacking hundreds of days reinforces the temporally stable signal while incoherent noise cancels out, improving the SNR. With sufficient stacking and a well-distributed noise source field, the result converges toward the empirical Green's function (EGF) between the two stations."
   },
   {
     category: "Cross-Correlation",
     question: "What is a famous example of convolution in seismology?",
     options: [
-      "The Fourier transform of a seismogram",
-      "The seismogram is the convolution of the source time function, Earth's impulse response (Green's function), and the instrument response",
-      "The cross-correlation of two stations",
-      "The deconvolution of the instrument response"
+      "The Fourier transform that converts a seismogram from time domain to frequency domain",
+      "The recorded seismogram as convolution of source, Green's function, and instrument response",
+      "The cross-correlation of continuous noise records computed between two seismic stations",
+      "The deconvolution of the instrument response applied to recover true ground displacement"
     ],
     correct: 1,
     explanation: "u(t) = s(t) * G(t) * I(t) — the recorded seismogram u(t) is the convolution of the source s(t), the Green's function G(t), and the instrument response I(t). This is the fundamental equation of observational seismology."
@@ -441,13 +441,13 @@ const questions = [
     category: "Green's Function",
     question: "What is a Green's function in the context of seismology?",
     options: [
-      "The frequency response of a seismometer",
-      "The impulse response of the Earth between two points — the signal you would record from a perfect point source",
-      "The noise spectrum of a seismic station",
-      "The transfer function of an analog-to-digital converter"
+      "The frequency response curve that characterizes a seismometer's bandwidth and sensitivity",
+      "The background noise power spectrum measured at a quiet seismic station site",
+      "The transfer function of the analog-to-digital converter inside the digitizer unit",
+      "The impulse response of the Earth — the signal from a perfect point source"
     ],
-    correct: 1,
-    explanation: "The Green's function describes how the Earth transmits seismic energy between two points. In ambient noise seismology, cross-correlating long records of ambient noise between two stations yields an estimate of the Green's function (empirical Green's function, EGF)."
+    correct: 3,
+    explanation: "The Green's function is the Earth's impulse response: the complete displacement field produced by an impulsive point force at one location, as recorded at another. It encodes all propagation effects (velocity structure, attenuation, scattering). In ambient noise seismology, cross-correlating long continuous records between two stations retrieves an estimate of this function (empirical Green's function, EGF)."
   },
   // --- WAVELENGTH & DISPERSION ---
   {
@@ -455,53 +455,53 @@ const questions = [
     question: "A Rayleigh wave has a period of 5 s and travels at 3.2 km/s. What is its wavelength?",
     options: ["0.64 km", "1.6 km", "8 km", "16 km"],
     correct: 3,
-    explanation: "Wavelength = velocity x period = 3.2 km/s x 5 s = 16 km. Longer periods = longer wavelengths = deeper sensitivity."
+    explanation: "Wavelength λ = velocity × period = 3.2 km/s × 5 s = 16 km. Longer periods yield longer wavelengths, and surface waves with longer wavelengths have depth sensitivity kernels that extend deeper into the Earth."
   },
   {
     category: "Dispersion",
     question: "What does 'dispersion' mean for surface waves?",
     options: [
-      "The wave amplitude decreases with distance",
-      "Different frequencies travel at different velocities, so the waveform spreads out over time",
-      "The wave changes direction at layer boundaries",
-      "The wave polarization rotates with depth"
+      "Different frequencies travel at different velocities, causing the waveform to spread",
+      "The wave amplitude decreases with distance due to geometrical spreading effects",
+      "The wave changes propagation direction when it crosses a layer boundary",
+      "The wave polarization rotates progressively as it penetrates into deeper layers"
     ],
-    correct: 1,
-    explanation: "Surface wave dispersion means that velocity depends on frequency (or period). Longer periods sense deeper (faster) structure, so they arrive earlier. This spreading is what allows us to extract velocity-vs-period dispersion curves."
+    correct: 0,
+    explanation: "Surface wave dispersion means phase velocity depends on frequency (or period). Longer-period waves have deeper sensitivity kernels and sample faster material at depth, so they propagate faster and arrive earlier. This frequency-dependent velocity is what we measure as a dispersion curve c(T)."
   },
   {
     category: "Dispersion",
     question: "Are body waves (P, S) dispersive in a homogeneous medium?",
     options: [
-      "Yes, always",
-      "No — body waves are non-dispersive; all frequencies travel at the same velocity in a homogeneous medium",
-      "Only P waves are dispersive",
-      "Only at frequencies above 1 Hz"
+      "Yes — body waves are always dispersive regardless of the medium properties",
+      "Only P waves are dispersive; S waves travel at a constant velocity",
+      "No — all frequencies travel at the same velocity in a homogeneous medium",
+      "Only at frequencies above 1 Hz where attenuation causes velocity changes"
     ],
-    correct: 1,
-    explanation: "In a homogeneous medium, body waves travel at a single velocity regardless of frequency (non-dispersive). Surface waves are dispersive because they sample different depths depending on wavelength, and velocity varies with depth."
+    correct: 2,
+    explanation: "In a homogeneous medium, body waves propagate at a single velocity regardless of frequency (non-dispersive). Surface waves are dispersive because their sensitivity kernels extend to different depths depending on wavelength; in a vertically heterogeneous Earth, this means each frequency samples a different effective velocity."
   },
   // --- RAYLEIGH WAVE PARTICLE MOTION ---
   {
     category: "Wave Physics",
     question: "Rayleigh waves produce particle motion in which plane?",
     options: [
-      "The horizontal transverse plane (perpendicular to propagation)",
-      "The vertical-radial plane (sagittal plane, parallel to propagation)",
-      "Purely vertical motion only",
-      "Random 3D motion"
+      "The vertical-radial (sagittal) plane, parallel to the propagation direction",
+      "The horizontal transverse plane, perpendicular to the propagation direction",
+      "Purely vertical motion with no horizontal component at any depth",
+      "Random three-dimensional motion that varies with source distance"
     ],
-    correct: 1,
+    correct: 0,
     explanation: "Rayleigh waves have retrograde elliptical particle motion in the sagittal plane (vertical + radial direction of propagation). Love waves have transverse horizontal motion. This is why Rayleigh waves appear on Z and R components, and Love waves on T."
   },
   {
     category: "Wave Physics",
     question: "On which seismogram components do you measure Rayleigh wave dispersion, and on which do you measure Love wave dispersion?",
     options: [
-      "Rayleigh on Z and R (radial), Love on T (transverse)",
-      "Rayleigh on T (transverse), Love on Z and R (radial)",
-      "Both on the Z component only",
-      "Rayleigh on E, Love on N"
+      "Rayleigh on Z and R (radial); Love on T (transverse)",
+      "Rayleigh on T (transverse); Love on Z and R (radial)",
+      "Both on the Z (vertical) component only, regardless of wave type",
+      "Rayleigh on E (east); Love on N (north) in geographic coordinates"
     ],
     correct: 0,
     explanation: "Rayleigh waves move in the vertical-radial plane (ZR), Love waves move in the transverse plane (T). After rotating horizontal components to R and T using the station-pair azimuth, ZZ and RR give Rayleigh dispersion, TT gives Love dispersion."
@@ -511,10 +511,10 @@ const questions = [
     category: "Preprocessing",
     question: "What is the typical preprocessing sequence for ambient noise data before cross-correlation?",
     options: [
-      "Decimate, cross-correlate, remove trend, bandpass filter",
-      "Remove instrument response, detrend, demean, bandpass filter, temporal normalization, spectral whitening",
-      "Stack all traces, then remove noise",
-      "Apply gain correction only"
+      "Decimate, cross-correlate, remove trend, bandpass filter, then apply gain correction",
+      "Remove response, detrend, demean, bandpass, temporal normalization, spectral whitening",
+      "Stack all raw traces into a single stream, threshold to remove noise, then filter",
+      "Apply gain correction, rotate components, compute cross-correlations, then detrend"
     ],
     correct: 1,
     explanation: "Standard workflow: (1) remove instrument response, (2) detrend & demean, (3) bandpass filter, (4) temporal normalization (e.g., 1-bit or running absolute mean) to suppress earthquakes and transients, (5) spectral whitening to broaden the usable frequency band."
@@ -523,85 +523,97 @@ const questions = [
     category: "Preprocessing",
     question: "What is the purpose of temporal normalization (e.g., 1-bit normalization) in ambient noise processing?",
     options: [
-      "To increase the sampling rate",
-      "To suppress high-amplitude transients like earthquakes, so the ambient noise signal dominates",
-      "To convert the data from velocity to displacement",
-      "To correct for instrument clock drift"
+      "To increase the effective sampling rate of the continuous data stream for better resolution",
+      "To convert the recorded data from velocity units to displacement units before correlation",
+      "To correct for instrument clock drift that accumulates over long continuous recording periods",
+      "To suppress high-amplitude transients like earthquakes so ambient noise dominates the signal"
     ],
-    correct: 1,
-    explanation: "Temporal normalization (1-bit, running absolute mean, etc.) removes amplitude information, suppressing earthquakes and other transients that would dominate the cross-correlation. This ensures the ambient noise wavefield — which carries the Green's function — controls the result."
+    correct: 3,
+    explanation: "Temporal normalization (1-bit, running absolute mean, etc.) suppresses amplitude variations from earthquakes and other transients that would otherwise bias the cross-correlation. By equalizing amplitudes, the diffuse ambient noise wavefield dominates, enabling convergence toward the empirical Green's function upon stacking."
   },
   // --- PPSD, NOISE MODELS ---
   {
     category: "Noise & Instruments",
-    question: "In a PPSD (Probabilistic Power Spectral Density) plot, what do NHNM and NLNM stand for?",
+    question: "In a PPSD (Probabilistic Power Spectral Density) plot, what do the two reference curves NHNM and NLNM represent?",
     options: [
-      "New High Noise Margin / New Low Noise Margin",
-      "New High Noise Model / New Low Noise Model — Peterson (1993) global reference curves",
-      "Normal Horizontal Noise Mode / Normal Lateral Noise Mode",
-      "Nighttime High Noise Measurement / Nighttime Low Noise Measurement"
+      "Global upper and lower bounds of expected ambient seismic noise across all frequencies",
+      "The maximum and minimum noise levels recorded at a single station over one year",
+      "The noise thresholds that trigger automatic earthquake detection algorithms on the station",
+      "The horizontal and vertical component noise levels measured during station site certification"
     ],
-    correct: 1,
-    explanation: "NHNM = New High Noise Model, NLNM = New Low Noise Model, defined by Peterson (1993) from a global compilation of seismic station noise. A well-functioning station should have its noise level between these two curves."
+    correct: 0,
+    explanation: "NHNM (New High Noise Model) and NLNM (New Low Noise Model) are global reference curves compiled from hundreds of stations worldwide. A well-functioning station should have its noise level between these two curves."
   },
   // --- INSTRUMENT RESPONSE ---
   {
     category: "Noise & Instruments",
     question: "What is the 'instrument response' of a seismometer?",
     options: [
-      "The time it takes for the seismometer to warm up",
-      "The transfer function that describes how the seismometer converts ground motion into an electrical signal, as a function of frequency",
-      "The maximum ground acceleration the sensor can record",
-      "The noise floor of the digitizer"
+      "The time the seismometer needs to warm up and stabilize after installation on site",
+      "The transfer function describing how ground motion becomes an electrical signal vs. frequency",
+      "The maximum ground acceleration the sensor can record before its output signal clips",
+      "The noise floor of the digitizer that sets the smallest detectable ground motion level"
     ],
     correct: 1,
     explanation: "The instrument response describes the frequency-dependent amplification and phase shift between true ground motion and the recorded output. Removing it (deconvolution) recovers true ground motion in physical units (m/s or m/s^2)."
   },
   {
     category: "Noise & Instruments",
-    question: "What does the 'corner frequency' of a broadband seismometer define, and why is ~120 s (0.0083 Hz) common?",
+    question: "What does the 'corner frequency' (or corner period) of a broadband seismometer define?",
     options: [
-      "The frequency above which the sensor clips — 120 s prevents saturation",
-      "The low-frequency limit below which the sensor's response rolls off — 120 s allows recording teleseismic surface waves and Earth's free oscillations",
-      "The sampling rate of the digitizer",
-      "The frequency at which the sensor has maximum sensitivity"
+      "The frequency above which the sensor saturates and clips the output signal",
+      "The sampling rate at which the digitizer converts analog to digital counts",
+      "The frequency below which the sensor response rolls off and fidelity is lost",
+      "The frequency at which the sensor reaches its peak electrical sensitivity"
     ],
-    correct: 1,
-    explanation: "The corner period defines the longest period the sensor can faithfully record. A 120 s corner period means the sensor is flat down to ~0.008 Hz, essential for recording teleseisms and long-period surface waves used in tomography. Short-period sensors (e.g., 1 Hz corner) miss these signals."
+    correct: 2,
+    explanation: "The corner period defines the longest period the sensor can faithfully record. Below this frequency (or above this period), the sensor response drops off rapidly and the recorded amplitudes are no longer accurate."
+  },
+  {
+    category: "Noise & Instruments",
+    question: "Many broadband seismometers have a corner period of ~120 s (0.0083 Hz). Why is this value so widespread?",
+    options: [
+      "It matches the dominant frequency of local earthquakes recorded in urban areas",
+      "It is required by the SEED data format standard for all broadband instruments",
+      "It captures teleseismic surface waves, Earth's free oscillations, and long-period signals",
+      "It minimizes mechanical wear on the sensor's internal mass and spring system"
+    ],
+    correct: 2,
+    explanation: "A 120 s corner period means the sensor is flat down to ~0.008 Hz, essential for recording teleseisms, long-period surface waves used in tomography, and Earth's normal modes. Short-period sensors (e.g., 1 Hz corner) miss these signals entirely."
   },
   // --- CHANNEL NAMING ---
   {
     category: "Noise & Instruments",
     question: "In the SEED channel naming convention (e.g., BHZ), what does the first letter represent?",
     options: [
-      "The sensor type (Broadband, High-gain, etc.)",
-      "The band code indicating sampling rate (B = ~20 Hz, H = ~100 Hz, E = ~100 Hz short-period)",
-      "The orientation (B = bottom)",
-      "The network code"
+      "The band code indicating sampling rate (B ≈ 20 sps, H ≈ 100 sps)",
+      "The sensor type such as Broadband, High-gain, or Extremely short-period",
+      "The orientation of the component (B = bottom, H = horizontal, Z = vertical)",
+      "The network code identifying which institution operates the seismic station"
     ],
-    correct: 1,
+    correct: 0,
     explanation: "First letter = band/sampling rate: B (~10-80 sps), H (~80-250 sps), E (~80-250 sps, short-period), S (~10-80 sps, short-period), D (~250-1000 sps), L (~1 sps). Second letter = instrument type (H = high-gain seismometer, N = accelerometer). Third = orientation (Z, N, E or 1, 2, 3)."
   },
   {
     category: "Noise & Instruments",
     question: "What is the difference between channel codes HHZ and HNZ?",
     options: [
-      "HHZ is sampled at higher rate than HNZ",
-      "HHZ is a high-gain velocity seismometer, HNZ is a strong-motion accelerometer — both sampled at ~100 sps",
-      "HHZ records the vertical, HNZ records the north component",
-      "HHZ is broadband, HNZ is narrowband"
+      "HHZ is sampled at a higher rate than HNZ due to different digitizer settings",
+      "HHZ records the vertical component; HNZ records the north horizontal component instead",
+      "HHZ uses a broadband sensor; HNZ uses a narrowband geophone at the same station site",
+      "HHZ is a high-gain velocity sensor; HNZ is a strong-motion accelerometer, both ~100 sps"
     ],
-    correct: 1,
+    correct: 3,
     explanation: "The second letter: H = High-gain seismometer (velocity, very sensitive, clips during strong motion), N = accelerometer (measures acceleration, lower sensitivity but handles strong motion). Both with H as first letter = ~100 sps sampling."
   },
   {
     category: "Noise & Instruments",
     question: "Why do many short-period geophones have a corner frequency of 2 Hz (or 4.5 Hz)?",
     options: [
-      "To save battery power in the field",
-      "Because ambient noise below 2 Hz is too weak to record",
-      "Because they are designed for local/regional seismology and exploration where the signals of interest are above 1-2 Hz; a 2 Hz corner keeps the sensor small, cheap, and robust",
-      "Because of a SEED naming convention requirement"
+      "To save battery power in the field by limiting the bandwidth of recorded data",
+      "Because ambient noise below 2 Hz is too weak for any useful seismic application",
+      "Because they target local seismology and exploration signals above 1-2 Hz, staying compact",
+      "Because the SEED convention requires short-period instruments to use these specific corners"
     ],
     correct: 2,
     explanation: "Short-period geophones (2 Hz, 4.5 Hz) are compact, inexpensive, and sturdy — ideal for dense arrays and field deployment. They capture local earthquakes, ambient noise above 2 Hz, and exploration signals. The tradeoff: they cannot record teleseisms or long-period surface waves."
@@ -611,10 +623,10 @@ const questions = [
     category: "Noise Sources",
     question: "What generates the primary microseism (~14-20 s period)?",
     options: [
-      "Wind blowing directly on the seismometer",
-      "Traffic and human activity",
+      "Wind coupling directly into the ground surface near the seismometer",
+      "Traffic and industrial activity from nearby urban infrastructure",
       "Ocean waves interacting with the shallow seafloor near coastlines",
-      "Volcanic tremor"
+      "Continuous volcanic tremor from deep magmatic or hydrothermal sources"
     ],
     correct: 2,
     explanation: "Primary microseisms (~14-20 s) are generated by direct ocean wave loading on the shallow seafloor at coastlines. Their period matches the dominant ocean swell period. They are strongest near coasts."
@@ -623,10 +635,10 @@ const questions = [
     category: "Noise Sources",
     question: "The secondary microseism (~5-10 s) is the strongest ambient noise signal on most broadband seismometers. How is it generated?",
     options: [
-      "By wind coupling into the ground",
-      "By nonlinear interaction of ocean waves traveling in opposite directions, creating a standing wave that exerts pressure on the ocean floor at double the wave frequency",
-      "By tidal forces from the Moon",
-      "By ice sheet movements in Antarctica"
+      "By wind coupling into the ground and transferring energy at the dominant wind frequency",
+      "By nonlinear interaction of opposing ocean waves, creating pressure at double the frequency",
+      "By tidal forces from the Moon generating long-period pressure variations on the ocean floor",
+      "By ice sheet movements in Antarctica transmitting seismic energy through the lithosphere"
     ],
     correct: 1,
     explanation: "The secondary microseism is generated by the nonlinear interference of opposing ocean swells (Longuet-Higgins 1950). The resulting standing wave pressure fluctuation has double the frequency of the ocean waves (~5-10 s period). It can be generated far from shore, in the deep ocean."
