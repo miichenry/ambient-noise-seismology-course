@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambient Noise Seismology Quiz</title>
+<style>
+  :root {
+    --primary: #2c3e50;
+    --accent: #3498db;
+    --correct: #27ae60;
+    --wrong: #e74c3c;
+    --bg: #f5f6fa;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--primary);
+    line-height: 1.6;
+  }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+  h1 { text-align: center; margin: 20px 0 5px; font-size: 1.8em; }
+  .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 0.95em; }
+
+  /* Registration */
+  #registration {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+  #registration h2 { margin-bottom: 20px; }
+  #nameInput {
+    font-size: 1.1em;
+    padding: 12px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 100%;
+    text-align: center;
+    outline: none;
+    transition: border 0.3s;
+  }
+  #nameInput:focus { border-color: var(--accent); }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 12px 30px;
+    font-size: 1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 10px 5px;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #2980b9; transform: translateY(-1px); }
+  .btn-secondary { background: #95a5a6; color: white; }
+  .btn-secondary:hover { background: #7f8c8d; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Progress */
+  .progress-bar {
+    background: #ecf0f1;
+    border-radius: 20px;
+    height: 8px;
+    margin: 15px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #2ecc71);
+    border-radius: 20px;
+    transition: width 0.4s ease;
+  }
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+  }
+
+  /* Timer */
+  .timer {
+    text-align: center;
+    font-size: 1.1em;
+    color: #7f8c8d;
+    margin-bottom: 10px;
+  }
+  .timer.warning { color: var(--wrong); font-weight: bold; }
+
+  /* Question card */
+  .question-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  .q-number {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-right: 10px;
+  }
+  .q-category {
+    display: inline-block;
+    background: #ecf0f1;
+    color: #7f8c8d;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    float: right;
+    margin-top: 4px;
+  }
+  .q-text {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin: 15px 0 20px;
+  }
+  .q-image {
+    text-align: center;
+    margin: 10px 0 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    border: 2px solid #ecf0f1;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95em;
+  }
+  .option:hover { border-color: var(--accent); background: #f0f7ff; }
+  .option.selected { border-color: var(--accent); background: #e8f4fd; }
+  .option.correct { border-color: var(--correct); background: #e8f8f0; }
+  .option.wrong { border-color: var(--wrong); background: #fde8e8; }
+  .option.disabled { pointer-events: none; opacity: 0.7; }
+  .option-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #ecf0f1;
+    font-weight: bold;
+    font-size: 0.85em;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .option.selected .option-letter { background: var(--accent); color: white; }
+  .option.correct .option-letter { background: var(--correct); color: white; }
+  .option.wrong .option-letter { background: var(--wrong); color: white; }
+
+  /* Explanation */
+  .explanation {
+    margin-top: 15px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation.correct-exp { background: #e8f8f0; border-left: 4px solid var(--correct); }
+  .explanation.wrong-exp { background: #fde8e8; border-left: 4px solid var(--wrong); }
+
+  /* Navigation */
+  .nav-buttons { display: flex; justify-content: space-between; margin-top: 15px; }
+
+  /* Results */
+  #results {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    display: none;
+  }
+  .score-circle {
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+  }
+  .score-circle .label { font-size: 0.35em; font-weight: normal; }
+  .score-excellent { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+  .score-good { background: linear-gradient(135deg, #f39c12, #f1c40f); }
+  .score-needs-work { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+  /* Leaderboard */
+  .leaderboard { margin-top: 25px; }
+  .leaderboard h3 { margin-bottom: 10px; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; }
+  .lb-entry {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    transition: background 0.2s;
+  }
+  .lb-entry:nth-child(2) { background: #fff9e6; }
+  .lb-entry:nth-child(3) { background: #f0f7ff; }
+  .lb-entry:nth-child(4) { background: #f0fff0; }
+  .lb-entry.current { background: #e8f4fd; border: 2px solid var(--accent); }
+  .lb-rank {
+    font-weight: bold;
+    font-size: 1.1em;
+    width: 35px;
+    text-align: center;
+  }
+  .lb-name { flex: 1; margin-left: 10px; font-weight: 500; }
+  .lb-score { font-weight: bold; font-size: 1.1em; }
+  .lb-time { color: #7f8c8d; font-size: 0.85em; margin-left: 10px; width: 60px; text-align: right; }
+
+  /* Review */
+  .review-item {
+    padding: 12px 15px;
+    margin: 5px 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+  }
+  .review-correct { background: #e8f8f0; }
+  .review-wrong { background: #fde8e8; }
+  .review-icon { font-size: 1.2em; margin-right: 10px; }
+  .review-cat { color: #7f8c8d; font-size: 0.8em; margin-left: auto; }
+
+  /* Category stats */
+  .cat-stats { margin-top: 20px; }
+  .cat-bar-container {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    font-size: 0.85em;
+  }
+  .cat-label { width: 180px; text-align: right; padding-right: 12px; color: #555; }
+  .cat-bar-bg {
+    flex: 1;
+    height: 20px;
+    background: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .cat-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s ease;
+  }
+  .cat-bar-text {
+    width: 50px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9em;
+  }
+
+  /* Admin panel */
+  .admin-toggle {
+    text-align: center;
+    margin-top: 20px;
+  }
+  .admin-toggle a {
+    color: #bdc3c7;
+    font-size: 0.8em;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .admin-toggle a:hover { color: var(--accent); }
+  #adminPanel { display: none; margin-top: 15px; }
+
+  @media (max-width: 600px) {
+    .container { padding: 10px; }
+    .question-card { padding: 20px; }
+    #nameInput { width: 100%; }
+    .q-category { float: none; display: block; margin-top: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Ambient Noise Seismology</h1>
+  <p class="subtitle">University of Geneva &mdash; 10-15 Minute Quiz</p>
+
+  <!-- Registration -->
+  <div id="registration">
+    <h2>Welcome!</h2>
+    <p style="margin-bottom:20px;color:#7f8c8d;">Enter your name to begin the quiz.<br>20 multiple-choice questions &bull; ~45 seconds each</p>
+    <input type="text" id="nameInput" placeholder="Your full name" autofocus>
+    <br>
+    <button class="btn btn-primary" onclick="startQuiz()" id="startBtn">Start Quiz</button>
+    <div class="admin-toggle">
+      <a onclick="toggleLeaderboard()">View Leaderboard</a>
+    </div>
+    <div id="preLeaderboard" style="display:none;margin-top:20px;"></div>
+  </div>
+
+  <!-- Quiz -->
+  <div id="quiz" style="display:none;">
+    <div class="timer" id="timer">15:00</div>
+    <div class="progress-text">
+      <span id="progressLabel">Question 1 of 20</span>
+      <span id="scoreLabel">Score: 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div id="questionContainer"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>Previous</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results"></div>
+</div>
+
+<script>
+const questions = [
+  // --- CROSS-CORRELATION & LAG TIME ---
+  {
+    category: "Cross-Correlation",
+    question: "Two stations are 90 km apart. If the Rayleigh wave travels at 3 km/s, at what lag time do you expect to see the main arrival on the cross-correlation function (CCF)?",
+    options: ["15 s", "30 s", "45 s", "90 s"],
+    correct: 1,
+    explanation: "Lag time = distance / velocity = 90 km / 3 km/s = 30 s. The CCF shows peaks at positive and negative lag times corresponding to waves traveling in both directions between the stations."
+  },
+  {
+    category: "Cross-Correlation",
+    question: "What is a cross-correlation compared to a convolution?",
+    options: [
+      "Cross-correlation multiplies signals in the frequency domain; convolution adds them",
+      "Cross-correlation measures similarity as a function of time shift; convolution folds and integrates one signal over another (equivalent to correlation with one signal time-reversed)",
+      "They are the same operation",
+      "Convolution measures similarity; cross-correlation filters signals"
+    ],
+    correct: 1,
+    explanation: "Cross-correlation slides one signal over another to measure similarity at each lag. Convolution does the same but with one signal time-reversed (or equivalently, conjugated in the frequency domain). In the frequency domain: correlation = A* x B, convolution = A x B."
+  },
+  {
+    category: "Cross-Correlation",
+    question: "Why do we stack (average) many daily cross-correlations?",
+    options: [
+      "To increase the sampling rate of the signal",
+      "To reduce incoherent noise and enhance the coherent Green's function estimate",
+      "To convert velocity to displacement seismograms",
+      "To remove the instrument response"
+    ],
+    correct: 1,
+    explanation: "Individual daily CCFs are noisy. Stacking hundreds of days reinforces the coherent part (the empirical Green's function) while the random noise cancels out, improving the signal-to-noise ratio (SNR)."
+  },
+  {
+    category: "Cross-Correlation",
+    question: "What is a famous example of convolution in seismology?",
+    options: [
+      "The Fourier transform of a seismogram",
+      "The seismogram is the convolution of the source time function, Earth's impulse response (Green's function), and the instrument response",
+      "The cross-correlation of two stations",
+      "The deconvolution of the instrument response"
+    ],
+    correct: 1,
+    explanation: "u(t) = s(t) * G(t) * I(t) — the recorded seismogram u(t) is the convolution of the source s(t), the Green's function G(t), and the instrument response I(t). This is the fundamental equation of observational seismology."
+  },
+  // --- GREEN'S FUNCTION ---
+  {
+    category: "Green's Function",
+    question: "What is a Green's function in the context of seismology?",
+    options: [
+      "The frequency response of a seismometer",
+      "The impulse response of the Earth between two points — the signal you would record from a perfect point source",
+      "The noise spectrum of a seismic station",
+      "The transfer function of an analog-to-digital converter"
+    ],
+    correct: 1,
+    explanation: "The Green's function describes how the Earth transmits seismic energy between two points. In ambient noise seismology, cross-correlating long records of ambient noise between two stations yields an estimate of the Green's function (empirical Green's function, EGF)."
+  },
+  // --- WAVELENGTH & DISPERSION ---
+  {
+    category: "Dispersion",
+    question: "A Rayleigh wave has a period of 5 s and travels at 3.2 km/s. What is its wavelength?",
+    options: ["0.64 km", "1.6 km", "8 km", "16 km"],
+    correct: 3,
+    explanation: "Wavelength = velocity x period = 3.2 km/s x 5 s = 16 km. Longer periods = longer wavelengths = deeper sensitivity."
+  },
+  {
+    category: "Dispersion",
+    question: "What does 'dispersion' mean for surface waves?",
+    options: [
+      "The wave amplitude decreases with distance",
+      "Different frequencies travel at different velocities, so the waveform spreads out over time",
+      "The wave changes direction at layer boundaries",
+      "The wave polarization rotates with depth"
+    ],
+    correct: 1,
+    explanation: "Surface wave dispersion means that velocity depends on frequency (or period). Longer periods sense deeper (faster) structure, so they arrive earlier. This spreading is what allows us to extract velocity-vs-period dispersion curves."
+  },
+  {
+    category: "Dispersion",
+    question: "Are body waves (P, S) dispersive in a homogeneous medium?",
+    options: [
+      "Yes, always",
+      "No — body waves are non-dispersive; all frequencies travel at the same velocity in a homogeneous medium",
+      "Only P waves are dispersive",
+      "Only at frequencies above 1 Hz"
+    ],
+    correct: 1,
+    explanation: "In a homogeneous medium, body waves travel at a single velocity regardless of frequency (non-dispersive). Surface waves are dispersive because they sample different depths depending on wavelength, and velocity varies with depth."
+  },
+  // --- RAYLEIGH WAVE PARTICLE MOTION ---
+  {
+    category: "Wave Physics",
+    question: "Rayleigh waves produce particle motion in which plane?",
+    options: [
+      "The horizontal transverse plane (perpendicular to propagation)",
+      "The vertical-radial plane (sagittal plane, parallel to propagation)",
+      "Purely vertical motion only",
+      "Random 3D motion"
+    ],
+    correct: 1,
+    explanation: "Rayleigh waves have retrograde elliptical particle motion in the sagittal plane (vertical + radial direction of propagation). Love waves have transverse horizontal motion. This is why Rayleigh waves appear on Z and R components, and Love waves on T."
+  },
+  {
+    category: "Wave Physics",
+    question: "On which seismogram components do you measure Rayleigh wave dispersion, and on which do you measure Love wave dispersion?",
+    options: [
+      "Rayleigh on Z and R (radial), Love on T (transverse)",
+      "Rayleigh on T (transverse), Love on Z and R (radial)",
+      "Both on the Z component only",
+      "Rayleigh on E, Love on N"
+    ],
+    correct: 0,
+    explanation: "Rayleigh waves move in the vertical-radial plane (ZR), Love waves move in the transverse plane (T). After rotating horizontal components to R and T using the station-pair azimuth, ZZ and RR give Rayleigh dispersion, TT gives Love dispersion."
+  },
+  // --- PREPROCESSING ---
+  {
+    category: "Preprocessing",
+    question: "What is the typical preprocessing sequence for ambient noise data before cross-correlation?",
+    options: [
+      "Decimate, cross-correlate, remove trend, bandpass filter",
+      "Remove instrument response, detrend, demean, bandpass filter, temporal normalization, spectral whitening",
+      "Stack all traces, then remove noise",
+      "Apply gain correction only"
+    ],
+    correct: 1,
+    explanation: "Standard workflow: (1) remove instrument response, (2) detrend & demean, (3) bandpass filter, (4) temporal normalization (e.g., 1-bit or running absolute mean) to suppress earthquakes and transients, (5) spectral whitening to broaden the usable frequency band."
+  },
+  {
+    category: "Preprocessing",
+    question: "What is the purpose of temporal normalization (e.g., 1-bit normalization) in ambient noise processing?",
+    options: [
+      "To increase the sampling rate",
+      "To suppress high-amplitude transients like earthquakes, so the ambient noise signal dominates",
+      "To convert the data from velocity to displacement",
+      "To correct for instrument clock drift"
+    ],
+    correct: 1,
+    explanation: "Temporal normalization (1-bit, running absolute mean, etc.) removes amplitude information, suppressing earthquakes and other transients that would dominate the cross-correlation. This ensures the ambient noise wavefield — which carries the Green's function — controls the result."
+  },
+  // --- PPSD, NOISE MODELS ---
+  {
+    category: "Noise & Instruments",
+    question: "In a PPSD (Probabilistic Power Spectral Density) plot, what do NHNM and NLNM stand for?",
+    options: [
+      "New High Noise Margin / New Low Noise Margin",
+      "New High Noise Model / New Low Noise Model — Peterson (1993) global reference curves",
+      "Normal Horizontal Noise Mode / Normal Lateral Noise Mode",
+      "Nighttime High Noise Measurement / Nighttime Low Noise Measurement"
+    ],
+    correct: 1,
+    explanation: "NHNM = New High Noise Model, NLNM = New Low Noise Model, defined by Peterson (1993) from a global compilation of seismic station noise. A well-functioning station should have its noise level between these two curves."
+  },
+  // --- INSTRUMENT RESPONSE ---
+  {
+    category: "Noise & Instruments",
+    question: "What is the 'instrument response' of a seismometer?",
+    options: [
+      "The time it takes for the seismometer to warm up",
+      "The transfer function that describes how the seismometer converts ground motion into an electrical signal, as a function of frequency",
+      "The maximum ground acceleration the sensor can record",
+      "The noise floor of the digitizer"
+    ],
+    correct: 1,
+    explanation: "The instrument response describes the frequency-dependent amplification and phase shift between true ground motion and the recorded output. Removing it (deconvolution) recovers true ground motion in physical units (m/s or m/s^2)."
+  },
+  {
+    category: "Noise & Instruments",
+    question: "What does the 'corner frequency' of a broadband seismometer define, and why is ~120 s (0.0083 Hz) common?",
+    options: [
+      "The frequency above which the sensor clips — 120 s prevents saturation",
+      "The low-frequency limit below which the sensor's response rolls off — 120 s allows recording teleseismic surface waves and Earth's free oscillations",
+      "The sampling rate of the digitizer",
+      "The frequency at which the sensor has maximum sensitivity"
+    ],
+    correct: 1,
+    explanation: "The corner period defines the longest period the sensor can faithfully record. A 120 s corner period means the sensor is flat down to ~0.008 Hz, essential for recording teleseisms and long-period surface waves used in tomography. Short-period sensors (e.g., 1 Hz corner) miss these signals."
+  },
+  // --- CHANNEL NAMING ---
+  {
+    category: "Noise & Instruments",
+    question: "In the SEED channel naming convention (e.g., BHZ), what does the first letter represent?",
+    options: [
+      "The sensor type (Broadband, High-gain, etc.)",
+      "The band code indicating sampling rate (B = ~20 Hz, H = ~100 Hz, E = ~100 Hz short-period)",
+      "The orientation (B = bottom)",
+      "The network code"
+    ],
+    correct: 1,
+    explanation: "First letter = band/sampling rate: B (~10-80 sps), H (~80-250 sps), E (~80-250 sps, short-period), S (~10-80 sps, short-period), D (~250-1000 sps), L (~1 sps). Second letter = instrument type (H = high-gain seismometer, N = accelerometer). Third = orientation (Z, N, E or 1, 2, 3)."
+  },
+  {
+    category: "Noise & Instruments",
+    question: "What is the difference between channel codes HHZ and HNZ?",
+    options: [
+      "HHZ is sampled at higher rate than HNZ",
+      "HHZ is a high-gain velocity seismometer, HNZ is a strong-motion accelerometer — both sampled at ~100 sps",
+      "HHZ records the vertical, HNZ records the north component",
+      "HHZ is broadband, HNZ is narrowband"
+    ],
+    correct: 1,
+    explanation: "The second letter: H = High-gain seismometer (velocity, very sensitive, clips during strong motion), N = accelerometer (measures acceleration, lower sensitivity but handles strong motion). Both with H as first letter = ~100 sps sampling."
+  },
+  {
+    category: "Noise & Instruments",
+    question: "Why do many short-period geophones have a corner frequency of 2 Hz (or 4.5 Hz)?",
+    options: [
+      "To save battery power in the field",
+      "Because ambient noise below 2 Hz is too weak to record",
+      "Because they are designed for local/regional seismology and exploration where the signals of interest are above 1-2 Hz; a 2 Hz corner keeps the sensor small, cheap, and robust",
+      "Because of a SEED naming convention requirement"
+    ],
+    correct: 2,
+    explanation: "Short-period geophones (2 Hz, 4.5 Hz) are compact, inexpensive, and sturdy — ideal for dense arrays and field deployment. They capture local earthquakes, ambient noise above 2 Hz, and exploration signals. The tradeoff: they cannot record teleseisms or long-period surface waves."
+  },
+  // --- AMBIENT NOISE SOURCES ---
+  {
+    category: "Noise Sources",
+    question: "What generates the primary microseism (~14-20 s period)?",
+    options: [
+      "Wind blowing directly on the seismometer",
+      "Traffic and human activity",
+      "Ocean waves interacting with the shallow seafloor near coastlines",
+      "Volcanic tremor"
+    ],
+    correct: 2,
+    explanation: "Primary microseisms (~14-20 s) are generated by direct ocean wave loading on the shallow seafloor at coastlines. Their period matches the dominant ocean swell period. They are strongest near coasts."
+  },
+  {
+    category: "Noise Sources",
+    question: "The secondary microseism (~5-10 s) is the strongest ambient noise signal on most broadband seismometers. How is it generated?",
+    options: [
+      "By wind coupling into the ground",
+      "By nonlinear interaction of ocean waves traveling in opposite directions, creating a standing wave that exerts pressure on the ocean floor at double the wave frequency",
+      "By tidal forces from the Moon",
+      "By ice sheet movements in Antarctica"
+    ],
+    correct: 1,
+    explanation: "The secondary microseism is generated by the nonlinear interference of opposing ocean swells (Longuet-Higgins 1950). The resulting standing wave pressure fluctuation has double the frequency of the ocean waves (~5-10 s period). It can be generated far from shore, in the deep ocean."
+  }
+];
+
+let currentQ = 0;
+let answers = new Array(questions.length).fill(null);
+let answered = new Array(questions.length).fill(false);
+let playerName = "";
+let timerInterval = null;
+let startTime = 0;
+let timeRemaining = 15 * 60; // 15 minutes
+
+function startQuiz() {
+  playerName = document.getElementById('nameInput').value.trim();
+  if (!playerName) {
+    document.getElementById('nameInput').style.borderColor = '#e74c3c';
+    document.getElementById('nameInput').placeholder = 'Please enter your name!';
+    return;
+  }
+  document.getElementById('registration').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  startTime = Date.now();
+  timeRemaining = 15 * 60;
+  timerInterval = setInterval(updateTimer, 1000);
+  showQuestion(0);
+}
+
+function updateTimer() {
+  timeRemaining--;
+  let m = Math.floor(timeRemaining / 60);
+  let s = timeRemaining % 60;
+  let timerEl = document.getElementById('timer');
+  timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  if (timeRemaining <= 120) timerEl.classList.add('warning');
+  if (timeRemaining <= 0) {
+    clearInterval(timerInterval);
+    finishQuiz();
+  }
+}
+
+function showQuestion(idx) {
+  currentQ = idx;
+  const q = questions[idx];
+  const letters = ['A', 'B', 'C', 'D'];
+
+  document.getElementById('progressLabel').textContent = `Question ${idx + 1} of ${questions.length}`;
+  document.getElementById('progressFill').style.width = `${((idx + 1) / questions.length) * 100}%`;
+  document.getElementById('scoreLabel').textContent = `Score: ${answers.filter((a, i) => a === questions[i].correct).length}`;
+
+  let html = `<div class="question-card">
+    <span class="q-number">${idx + 1}</span>
+    <span class="q-category">${q.category}</span>
+    <div class="q-text">${q.question}</div>
+    <div class="options">`;
+
+  q.options.forEach((opt, i) => {
+    let cls = 'option';
+    if (answered[idx]) {
+      if (i === q.correct) cls += ' correct';
+      else if (i === answers[idx] && i !== q.correct) cls += ' wrong';
+      cls += ' disabled';
+    } else if (answers[idx] === i) {
+      cls += ' selected';
+    }
+    html += `<div class="${cls}" onclick="selectAnswer(${idx}, ${i})">
+      <span class="option-letter">${letters[i]}</span>
+      <span>${opt}</span>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  if (answered[idx]) {
+    const isCorrect = answers[idx] === q.correct;
+    html += `<div class="explanation show ${isCorrect ? 'correct-exp' : 'wrong-exp'}">
+      ${isCorrect ? '&#x2705;' : '&#x274c;'} ${q.explanation}
+    </div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('questionContainer').innerHTML = html;
+
+  document.getElementById('prevBtn').disabled = idx === 0;
+  const nextBtn = document.getElementById('nextBtn');
+  if (idx === questions.length - 1) {
+    nextBtn.textContent = 'Finish';
+    nextBtn.onclick = finishQuiz;
+  } else {
+    nextBtn.textContent = 'Next';
+    nextBtn.onclick = nextQuestion;
+  }
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answers[qIdx] = optIdx;
+  answered[qIdx] = true;
+  showQuestion(qIdx);
+}
+
+function nextQuestion() {
+  if (currentQ < questions.length - 1) showQuestion(currentQ + 1);
+}
+
+function prevQuestion() {
+  if (currentQ > 0) showQuestion(currentQ - 1);
+}
+
+function finishQuiz() {
+  clearInterval(timerInterval);
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const score = answers.filter((a, i) => a === questions[i].correct).length;
+  const pct = Math.round((score / questions.length) * 100);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+
+  // Save to leaderboard
+  let lb = JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+  const entry = { name: playerName, score, total: questions.length, pct, time: elapsed, date: new Date().toISOString() };
+  lb.push(entry);
+  lb.sort((a, b) => b.pct - a.pct || a.time - b.time);
+  localStorage.setItem('ant_quiz_leaderboard', JSON.stringify(lb));
+
+  // Determine score class
+  let scoreClass = 'score-needs-work';
+  let msg = 'Please review the course material and try again.';
+  if (pct >= 80) { scoreClass = 'score-excellent'; msg = 'Excellent! You have a strong grasp of the material.'; }
+  else if (pct >= 60) { scoreClass = 'score-good'; msg = 'Good effort! Review the topics you missed.'; }
+
+  // Category stats
+  let catStats = {};
+  questions.forEach((q, i) => {
+    if (!catStats[q.category]) catStats[q.category] = { correct: 0, total: 0 };
+    catStats[q.category].total++;
+    if (answers[i] === q.correct) catStats[q.category].correct++;
+  });
+
+  let html = `<h2 style="text-align:center;">Results for ${playerName}</h2>
+    <div class="score-circle ${scoreClass}">
+      ${pct}%
+      <span class="label">${score}/${questions.length}</span>
+    </div>
+    <p style="text-align:center;color:#7f8c8d;">${msg}<br>Time: ${minutes}m ${seconds}s</p>`;
+
+  // Category breakdown
+  html += `<div class="cat-stats"><h3>Score by Topic</h3>`;
+  for (let cat in catStats) {
+    const s = catStats[cat];
+    const p = Math.round((s.correct / s.total) * 100);
+    const color = p >= 80 ? '#27ae60' : p >= 50 ? '#f39c12' : '#e74c3c';
+    html += `<div class="cat-bar-container">
+      <span class="cat-label">${cat}</span>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${p}%;background:${color};"></div></div>
+      <span class="cat-bar-text">${s.correct}/${s.total}</span>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Answer review
+  html += `<div style="margin-top:25px;"><h3>Answer Review</h3>`;
+  questions.forEach((q, i) => {
+    const correct = answers[i] === q.correct;
+    const letters = ['A', 'B', 'C', 'D'];
+    const yourAns = answers[i] !== null ? letters[answers[i]] : '—';
+    const correctAns = letters[q.correct];
+    html += `<div class="review-item ${correct ? 'review-correct' : 'review-wrong'}">
+      <span class="review-icon">${correct ? '&#x2705;' : '&#x274c;'}</span>
+      <span>Q${i+1}: ${correct ? 'Correct' : `You: ${yourAns}, Answer: ${correctAns}`}</span>
+      <span class="review-cat">${q.category}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Leaderboard
+  html += `<div class="leaderboard"><h3>&#127942; Leaderboard</h3>`;
+  lb.forEach((e, i) => {
+    const isCurrent = e.name === playerName && e.date === entry.date;
+    const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
+    const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
+    html += `<div class="lb-entry ${isCurrent ? 'current' : ''}">
+      <span class="lb-rank">${medal}</span>
+      <span class="lb-name">${e.name}</span>
+      <span class="lb-score">${e.pct}%</span>
+      <span class="lb-time">${t}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Admin: clear leaderboard
+  html += `<div class="admin-toggle"><a onclick="clearLeaderboard()">Clear leaderboard</a>
+    &nbsp;|&nbsp;<a onclick="location.reload()">Take again</a></div>`;
+
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').innerHTML = html;
+}
+
+function toggleLeaderboard() {
+  const el = document.getElementById('preLeaderboard');
+  if (el.style.display === 'none') {
+    let lb = JSON.parse(localStorage.getItem('ant_quiz_leaderboard') || '[]');
+    if (lb.length === 0) {
+      el.innerHTML = '<p style="color:#7f8c8d;">No results yet.</p>';
+    } else {
+      let html = '<div class="leaderboard"><h3>&#127942; Leaderboard</h3>';
+      lb.forEach((e, i) => {
+        const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
+        const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
+        html += `<div class="lb-entry">
+          <span class="lb-rank">${medal}</span>
+          <span class="lb-name">${e.name}</span>
+          <span class="lb-score">${e.pct}%</span>
+          <span class="lb-time">${t}</span>
+        </div>`;
+      });
+      html += '</div>';
+      el.innerHTML = html;
+    }
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function clearLeaderboard() {
+  if (confirm('Clear all leaderboard data?')) {
+    localStorage.removeItem('ant_quiz_leaderboard');
+    location.reload();
+  }
+}
+
+// Enter key starts quiz
+document.getElementById('nameInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') startQuiz();
+});
+</script>
+</body>
+</html>
