@@ -3,326 +3,376 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ambient Noise Seismology Quiz</title>
+<title>Quiz: Ambient Noise Seismology - Assessment</title>
 <style>
+  /* ============================================
+     Moodle-inspired LMS theme
+     Flat, institutional, no gradients/shadows
+     ============================================ */
   :root {
-    --primary: #2c3e50;
-    --accent: #3498db;
-    --correct: #27ae60;
-    --wrong: #e74c3c;
-    --bg: #f5f6fa;
-    --card: #ffffff;
+    --primary: #1d2125;
+    --moodle-blue: #0073aa;
+    --moodle-orange: #f0ad4e;
+    --correct: #5cb85c;
+    --wrong: #d9534f;
+    --bg: #e9eaed;
+    --card: #fff;
+    --border: #dee2e6;
+    --text-muted: #6a737b;
+    --header-bg: #1d2125;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: var(--bg);
     color: var(--primary);
-    line-height: 1.6;
+    line-height: 1.5;
+    font-size: 14px;
   }
-  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-  h1 { text-align: center; margin: 20px 0 5px; font-size: 1.8em; }
-  .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 0.95em; }
+
+  /* Top navbar */
+  .navbar {
+    background: var(--header-bg);
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .navbar a { color: #8acdff; text-decoration: none; }
+  .navbar a:hover { text-decoration: underline; }
+  .breadcrumb {
+    background: #f5f5f5;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .breadcrumb a { color: var(--moodle-blue); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .container { max-width: 780px; margin: 0 auto; padding: 15px; }
+  h1 { font-size: 1.4em; margin: 0 0 4px; font-weight: 600; color: var(--primary); }
+  .subtitle { color: var(--text-muted); margin-bottom: 15px; font-size: 0.85em; }
 
   /* Registration */
   #registration {
     background: var(--card);
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+    padding: 25px;
     text-align: center;
   }
-  #registration h2 { margin-bottom: 20px; }
+  #registration h2 { font-size: 1.15em; margin-bottom: 15px; font-weight: 600; }
   #nameInput {
-    font-size: 1.1em;
-    padding: 12px 20px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    width: 300px;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #bbb;
+    width: 280px;
     max-width: 100%;
     text-align: center;
     outline: none;
-    transition: border 0.3s;
   }
-  #nameInput:focus { border-color: var(--accent); }
+  #nameInput:focus { border-color: var(--moodle-blue); outline: 2px solid rgba(0,115,170,0.25); }
 
-  /* Buttons */
+  /* Buttons — flat Moodle style */
   .btn {
     display: inline-block;
-    padding: 12px 30px;
-    font-size: 1em;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
+    padding: 7px 20px;
+    font-size: 13px;
+    font-weight: 400;
+    border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.3s;
-    margin: 10px 5px;
+    margin: 8px 4px;
   }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #2980b9; transform: translateY(-1px); }
-  .btn-secondary { background: #95a5a6; color: white; }
-  .btn-secondary:hover { background: #7f8c8d; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-primary { background: var(--moodle-blue); color: white; border-color: #006291; }
+  .btn-primary:hover { background: #005f8a; }
+  .btn-secondary { background: #f8f9fa; color: #333; border-color: #ccc; }
+  .btn-secondary:hover { background: #e9ecef; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* Progress */
   .progress-bar {
-    background: #ecf0f1;
-    border-radius: 20px;
-    height: 8px;
-    margin: 15px 0;
+    background: #ddd;
+    height: 6px;
+    margin: 10px 0;
     overflow: hidden;
   }
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), #2ecc71);
-    border-radius: 20px;
-    transition: width 0.4s ease;
+    background: var(--moodle-blue);
+    transition: width 0.3s;
   }
   .progress-text {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85em;
-    color: #7f8c8d;
-    margin-bottom: 5px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
   }
 
   /* Timer */
   .timer {
-    text-align: center;
-    font-size: 1.1em;
-    color: #7f8c8d;
-    margin-bottom: 10px;
+    text-align: right;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-family: monospace;
   }
   .timer.warning { color: var(--wrong); font-weight: bold; }
 
   /* Question card */
   .question-card {
     background: var(--card);
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin-bottom: 12px;
   }
   .q-number {
     display: inline-block;
-    background: var(--accent);
-    color: white;
-    width: 32px; height: 32px;
-    border-radius: 50%;
+    background: #e8e8e8;
+    color: #333;
+    width: 26px; height: 26px;
     text-align: center;
-    line-height: 32px;
+    line-height: 26px;
     font-weight: bold;
-    font-size: 0.9em;
-    margin-right: 10px;
+    font-size: 12px;
+    margin-right: 8px;
   }
   .q-category {
     display: inline-block;
-    background: #ecf0f1;
-    color: #7f8c8d;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.8em;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
     float: right;
     margin-top: 4px;
+    font-style: italic;
   }
   .q-text {
-    font-size: 1.1em;
-    font-weight: 500;
-    margin: 15px 0 20px;
+    font-size: 14px;
+    font-weight: 400;
+    margin: 12px 0 16px;
+    line-height: 1.55;
   }
   .q-image {
     text-align: center;
-    margin: 10px 0 15px;
+    margin: 8px 0 12px;
     font-family: 'Courier New', monospace;
-    font-size: 0.95em;
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 8px;
+    font-size: 13px;
+    background: #f7f7f7;
+    padding: 10px;
+    border: 1px solid #ddd;
     white-space: pre;
     overflow-x: auto;
   }
 
-  /* Options */
-  .options { display: flex; flex-direction: column; gap: 10px; }
+  /* Options — radio-button style like Moodle MC */
+  .options { display: flex; flex-direction: column; gap: 6px; }
   .option {
     display: flex;
-    align-items: center;
-    padding: 14px 18px;
-    border: 2px solid #ecf0f1;
-    border-radius: 10px;
+    align-items: flex-start;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: #fafafa;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.95em;
+    font-size: 13px;
+    line-height: 1.5;
   }
-  .option:hover { border-color: var(--accent); background: #f0f7ff; }
-  .option.selected { border-color: var(--accent); background: #e8f4fd; }
-  .option.correct { border-color: var(--correct); background: #e8f8f0; }
-  .option.wrong { border-color: var(--wrong); background: #fde8e8; }
-  .option.disabled { pointer-events: none; opacity: 0.7; }
+  .option:hover { background: #f0f0f0; border-color: #bbb; }
+  .option.selected { border-color: var(--moodle-blue); background: #e7f3ff; }
+  .option.correct { border-color: var(--correct); background: #dff0d8; }
+  .option.wrong { border-color: var(--wrong); background: #f2dede; }
+  .option.disabled { pointer-events: none; }
   .option-letter {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px; height: 28px;
+    width: 22px; height: 22px;
+    border: 2px solid #999;
     border-radius: 50%;
-    background: #ecf0f1;
     font-weight: bold;
-    font-size: 0.85em;
-    margin-right: 12px;
+    font-size: 11px;
+    margin-right: 10px;
     flex-shrink: 0;
+    margin-top: 1px;
+    background: white;
   }
-  .option.selected .option-letter { background: var(--accent); color: white; }
-  .option.correct .option-letter { background: var(--correct); color: white; }
-  .option.wrong .option-letter { background: var(--wrong); color: white; }
+  .option.selected .option-letter { border-color: var(--moodle-blue); background: var(--moodle-blue); color: white; }
+  .option.correct .option-letter { border-color: var(--correct); background: var(--correct); color: white; }
+  .option.wrong .option-letter { border-color: var(--wrong); background: var(--wrong); color: white; }
 
-  /* Explanation */
+  /* Explanation — Moodle feedback box */
   .explanation {
-    margin-top: 15px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.9em;
+    margin-top: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
     display: none;
+    border: 1px solid;
   }
   .explanation.show { display: block; }
-  .explanation.correct-exp { background: #e8f8f0; border-left: 4px solid var(--correct); }
-  .explanation.wrong-exp { background: #fde8e8; border-left: 4px solid var(--wrong); }
+  .explanation.correct-exp { background: #dff0d8; border-color: #d6e9c6; color: #3c763d; }
+  .explanation.wrong-exp { background: #f2dede; border-color: #ebccd1; color: #a94442; }
 
   /* Navigation */
-  .nav-buttons { display: flex; justify-content: space-between; margin-top: 15px; }
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
 
   /* Results */
   #results {
     background: var(--card);
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+    padding: 25px;
     display: none;
   }
   .score-circle {
-    width: 150px; height: 150px;
+    width: 120px; height: 120px;
     border-radius: 50%;
-    margin: 20px auto;
+    margin: 15px auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 2.5em;
+    font-size: 2em;
     font-weight: bold;
     color: white;
   }
   .score-circle .label { font-size: 0.35em; font-weight: normal; }
-  .score-excellent { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-  .score-good { background: linear-gradient(135deg, #f39c12, #f1c40f); }
-  .score-needs-work { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+  .score-excellent { background: var(--correct); }
+  .score-good { background: var(--moodle-orange); }
+  .score-needs-work { background: var(--wrong); }
 
-  /* Leaderboard */
-  .leaderboard { margin-top: 25px; }
-  .leaderboard h3 { margin-bottom: 10px; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; }
+  /* Leaderboard — Moodle table style */
+  .leaderboard { margin-top: 20px; }
+  .leaderboard h3 {
+    font-size: 1em;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
   .lb-entry {
     display: flex;
     align-items: center;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin: 5px 0;
-    background: #f8f9fa;
-    transition: background 0.2s;
+    padding: 7px 12px;
+    margin: 0;
+    background: #fff;
+    border: 1px solid #eee;
+    border-top: none;
+    font-size: 13px;
   }
-  .lb-entry:nth-child(2) { background: #fff9e6; }
-  .lb-entry:nth-child(3) { background: #f0f7ff; }
-  .lb-entry:nth-child(4) { background: #f0fff0; }
-  .lb-entry.current { background: #e8f4fd; border: 2px solid var(--accent); }
+  .lb-entry:first-child, .lb-entry:nth-child(2) { border-top: 1px solid #eee; }
+  .lb-entry:nth-child(even) { background: #f9f9f9; }
+  .lb-entry.current { background: #e7f3ff; border-color: var(--moodle-blue); }
   .lb-rank {
     font-weight: bold;
-    font-size: 1.1em;
-    width: 35px;
+    font-size: 13px;
+    width: 30px;
     text-align: center;
+    color: var(--text-muted);
   }
-  .lb-name { flex: 1; margin-left: 10px; font-weight: 500; }
-  .lb-score { font-weight: bold; font-size: 1.1em; }
-  .lb-time { color: #7f8c8d; font-size: 0.85em; margin-left: 10px; width: 60px; text-align: right; }
+  .lb-name { flex: 1; margin-left: 8px; }
+  .lb-score { font-weight: bold; }
+  .lb-time { color: var(--text-muted); font-size: 12px; margin-left: 10px; width: 55px; text-align: right; }
 
   /* Review */
   .review-item {
-    padding: 12px 15px;
-    margin: 5px 0;
-    border-radius: 8px;
+    padding: 6px 10px;
+    margin: 2px 0;
     display: flex;
     align-items: center;
-    font-size: 0.9em;
+    font-size: 13px;
+    border: 1px solid #eee;
   }
-  .review-correct { background: #e8f8f0; }
-  .review-wrong { background: #fde8e8; }
-  .review-icon { font-size: 1.2em; margin-right: 10px; }
-  .review-cat { color: #7f8c8d; font-size: 0.8em; margin-left: auto; }
+  .review-correct { background: #dff0d8; border-color: #d6e9c6; }
+  .review-wrong { background: #f2dede; border-color: #ebccd1; }
+  .review-icon { font-size: 14px; margin-right: 8px; }
+  .review-cat { color: var(--text-muted); font-size: 11px; margin-left: auto; font-style: italic; }
 
-  /* Category stats */
-  .cat-stats { margin-top: 20px; }
+  /* Category stats — Moodle bar style */
+  .cat-stats { margin-top: 16px; }
+  .cat-stats h3 { font-size: 1em; font-weight: 600; margin-bottom: 8px; }
   .cat-bar-container {
     display: flex;
     align-items: center;
-    margin: 6px 0;
-    font-size: 0.85em;
+    margin: 4px 0;
+    font-size: 12px;
   }
-  .cat-label { width: 180px; text-align: right; padding-right: 12px; color: #555; }
+  .cat-label { width: 160px; text-align: right; padding-right: 10px; color: #555; }
   .cat-bar-bg {
     flex: 1;
-    height: 20px;
-    background: #ecf0f1;
-    border-radius: 10px;
+    height: 16px;
+    background: #e0e0e0;
     overflow: hidden;
-    position: relative;
   }
   .cat-bar-fill {
     height: 100%;
-    border-radius: 10px;
-    transition: width 0.6s ease;
+    transition: width 0.4s;
   }
   .cat-bar-text {
-    width: 50px;
+    width: 45px;
     text-align: center;
     font-weight: 600;
-    font-size: 0.9em;
+    font-size: 12px;
   }
 
-  /* Admin panel */
+  /* Admin links */
   .admin-toggle {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
   }
   .admin-toggle a {
-    color: #bdc3c7;
-    font-size: 0.8em;
+    color: var(--moodle-blue);
+    font-size: 12px;
     cursor: pointer;
     text-decoration: none;
   }
-  .admin-toggle a:hover { color: var(--accent); }
-  #adminPanel { display: none; margin-top: 15px; }
+  .admin-toggle a:hover { text-decoration: underline; }
+  #adminPanel { display: none; margin-top: 12px; }
 
   @media (max-width: 600px) {
-    .container { padding: 10px; }
-    .question-card { padding: 20px; }
+    .container { padding: 8px; }
+    .question-card { padding: 14px; }
     #nameInput { width: 100%; }
-    .q-category { float: none; display: block; margin-top: 5px; }
+    .q-category { float: none; display: block; margin-top: 4px; }
+    .cat-label { width: 100px; font-size: 11px; }
+    .navbar { font-size: 12px; padding: 6px 12px; }
   }
 </style>
 </head>
 <body>
 
+<div class="navbar">
+  <span>University of Geneva &mdash; Earth Sciences</span>
+  <span>Moodle</span>
+</div>
+<div class="breadcrumb">
+  <a href="#">Home</a> / <a href="#">Courses</a> / <a href="#">ESCI-4201</a> / <a href="#">Quizzes</a> / Ambient Noise Seismology Assessment
+</div>
+
 <div class="container">
-  <h1>Ambient Noise Seismology</h1>
-  <p class="subtitle">University of Geneva &mdash; 10-15 Minute Quiz</p>
+  <h1>Quiz: Ambient Noise Seismology</h1>
+  <p class="subtitle">Assessment &mdash; 20 questions &bull; 15 minutes &bull; 1 attempt allowed</p>
 
   <!-- Registration -->
   <div id="registration">
-    <h2>Welcome!</h2>
-    <p style="margin-bottom:20px;color:#7f8c8d;">Enter your name to begin the quiz.<br>20 multiple-choice questions &bull; ~45 seconds each</p>
-    <input type="text" id="nameInput" placeholder="Your full name" autofocus>
-    <br>
-    <button class="btn btn-primary" onclick="startQuiz()" id="startBtn">Start Quiz</button>
-    <div class="admin-toggle">
-      <a onclick="toggleLeaderboard()">View Leaderboard</a>
+    <h2>Attempt quiz</h2>
+    <p style="margin-bottom:15px;color:#6a737b;font-size:13px;">This quiz contains 20 multiple-choice questions covering ambient noise seismology fundamentals.<br>Time limit: 15 minutes. Enter your full name to begin.</p>
+    <div style="margin-bottom:8px;">
+      <label for="nameInput" style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;text-align:left;max-width:280px;margin-left:auto;margin-right:auto;">Full name</label>
+      <input type="text" id="nameInput" placeholder="First Last" autofocus>
     </div>
-    <div id="preLeaderboard" style="display:none;margin-top:20px;"></div>
+    <button class="btn btn-primary" onclick="startQuiz()" id="startBtn">Attempt quiz now</button>
+    <div class="admin-toggle">
+      <a onclick="toggleLeaderboard()">View previous attempts</a>
+    </div>
+    <div id="preLeaderboard" style="display:none;margin-top:15px;"></div>
   </div>
 
   <!-- Quiz -->
@@ -335,8 +385,8 @@
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     <div id="questionContainer"></div>
     <div class="nav-buttons">
-      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>Previous</button>
-      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>&laquo; Previous page</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next page &raquo;</button>
     </div>
   </div>
 
@@ -715,10 +765,10 @@ function showQuestion(idx) {
   document.getElementById('prevBtn').disabled = idx === 0;
   const nextBtn = document.getElementById('nextBtn');
   if (idx === questions.length - 1) {
-    nextBtn.textContent = 'Finish';
+    nextBtn.textContent = 'Submit all and finish';
     nextBtn.onclick = finishQuiz;
   } else {
-    nextBtn.textContent = 'Next';
+    nextBtn.innerHTML = 'Next page &raquo;';
     nextBtn.onclick = nextQuestion;
   }
 }
@@ -749,9 +799,9 @@ async function finishQuiz() {
   // Show loading state
   document.getElementById('quiz').style.display = 'none';
   document.getElementById('results').style.display = 'block';
-  document.getElementById('results').innerHTML = `<div style="text-align:center;padding:40px;">
-    <h2>Submitting results...</h2>
-    <p style="color:#7f8c8d;">Saving your score to the shared leaderboard</p></div>`;
+  document.getElementById('results').innerHTML = `<div style="text-align:center;padding:30px;">
+    <h2 style="font-size:1.15em;">Submitting attempt...</h2>
+    <p style="color:#6a737b;font-size:13px;">Saving your results</p></div>`;
 
   // Save to backend + localStorage
   const entry = { name: playerName, score, total: questions.length, pct, time: elapsed, date: new Date().toISOString() };
@@ -771,12 +821,25 @@ async function finishQuiz() {
     if (answers[i] === q.correct) catStats[q.category].correct++;
   });
 
-  let html = `<h2 style="text-align:center;">Results for ${playerName}</h2>
+  let html = `<h2 style="font-size:1.15em;">Review attempt: ${playerName}</h2>
+    <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;">
+      <tr style="border-bottom:1px solid #ddd;">
+        <td style="padding:6px 0;color:#6a737b;">Grade</td>
+        <td style="padding:6px 0;font-weight:600;">${score} out of ${questions.length} (${pct}%)</td>
+      </tr>
+      <tr style="border-bottom:1px solid #ddd;">
+        <td style="padding:6px 0;color:#6a737b;">Time taken</td>
+        <td style="padding:6px 0;">${minutes}m ${seconds}s</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:#6a737b;">Feedback</td>
+        <td style="padding:6px 0;">${msg}</td>
+      </tr>
+    </table>
     <div class="score-circle ${scoreClass}">
       ${pct}%
       <span class="label">${score}/${questions.length}</span>
-    </div>
-    <p style="text-align:center;color:#7f8c8d;">${msg}<br>Time: ${minutes}m ${seconds}s</p>`;
+    </div>`;
 
   // Category breakdown
   html += `<div class="cat-stats"><h3>Score by Topic</h3>`;
@@ -808,12 +871,12 @@ async function finishQuiz() {
   html += `</div>`;
 
   // Leaderboard
-  const backendLabel = hasBackend() ? ' (live \u2014 shared across all participants)' : ' (local browser only \u2014 set up backend for shared scores)';
-  html += `<div class="leaderboard" id="leaderboardSection"><h3>&#127942; Leaderboard${backendLabel}</h3>`;
+  const backendLabel = hasBackend() ? '' : ' (local browser only)';
+  html += `<div class="leaderboard" id="leaderboardSection"><h3>All attempts${backendLabel}</h3>`;
   lb.forEach((e, i) => {
     const isCurrent = e.name === playerName && Math.abs(e.pct - pct) < 1 && Math.abs(e.time - elapsed) < 5;
     const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
-    const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
+    const medal = `${i+1}.`;
     html += `<div class="lb-entry ${isCurrent ? 'current' : ''}">
       <span class="lb-rank">${medal}</span>
       <span class="lb-name">${e.name}</span>
@@ -825,8 +888,8 @@ async function finishQuiz() {
 
   // Controls
   html += `<div class="admin-toggle">
-    <a onclick="refreshLeaderboard()">Refresh leaderboard</a>
-    &nbsp;|&nbsp;<a onclick="location.reload()">Take again</a>
+    <a onclick="refreshLeaderboard()">Refresh results</a>
+    &nbsp;|&nbsp;<a onclick="location.reload()">Re-attempt quiz</a>
     &nbsp;|&nbsp;<a onclick="clearLeaderboard()">Clear local data</a>
   </div>`;
 
@@ -836,12 +899,12 @@ async function finishQuiz() {
 async function refreshLeaderboard() {
   const section = document.getElementById('leaderboardSection');
   if (!section) return;
-  section.innerHTML = '<h3>&#127942; Refreshing...</h3>';
+  section.innerHTML = '<h3>Loading...</h3>';
   const lb = await fetchLeaderboard();
-  let html = `<h3>&#127942; Leaderboard (${lb.length} entries)</h3>`;
+  let html = `<h3>All attempts (${lb.length})</h3>`;
   lb.forEach((e, i) => {
     const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
-    const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
+    const medal = `${i+1}.`;
     const isCurrent = e.name === playerName;
     html += `<div class="lb-entry ${isCurrent ? 'current' : ''}">
       <span class="lb-rank">${medal}</span>
@@ -860,12 +923,12 @@ async function toggleLeaderboard() {
     el.style.display = 'block';
     const lb = await fetchLeaderboard();
     if (lb.length === 0) {
-      el.innerHTML = '<p style="color:#7f8c8d;">No results yet. Be the first to take the quiz!</p>';
+      el.innerHTML = '<p style="color:#6a737b;font-size:13px;">No attempts recorded yet.</p>';
     } else {
-      let html = '<div class="leaderboard"><h3>&#127942; Leaderboard (' + lb.length + ' entries)</h3>';
+      let html = '<div class="leaderboard"><h3>Previous attempts (' + lb.length + ')</h3>';
       lb.forEach((e, i) => {
         const t = `${Math.floor(e.time/60)}m${(e.time%60).toString().padStart(2,'0')}s`;
-        const medal = i === 0 ? '&#x1F947;' : i === 1 ? '&#x1F948;' : i === 2 ? '&#x1F949;' : `${i+1}.`;
+        const medal = `${i+1}.`;
         html += `<div class="lb-entry">
           <span class="lb-rank">${medal}</span>
           <span class="lb-name">${e.name}</span>
