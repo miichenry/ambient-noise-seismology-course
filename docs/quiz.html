@@ -416,10 +416,10 @@ const questions = [
     category: "Cross-Correlation",
     question: "Why do we stack (average) many daily cross-correlations?",
     options: [
-      "To increase the effective sampling rate of the recorded continuous signal",
-      "To convert velocity seismograms into displacement seismograms automatically",
-      "To reduce incoherent noise and enhance the coherent Green's function",
-      "To remove the instrument response from each individual daily record"
+      "To increase the effective sampling rate of the recorded signal",
+      "To convert velocity seismograms into displacement seismograms",
+      "To reduce incoherent noise and enhance the Green's function",
+      "To remove the instrument response from each daily record"
     ],
     correct: 2,
     explanation: "Individual daily CCFs are noisy. Stacking hundreds of days reinforces the temporally stable signal while incoherent noise cancels out, improving the SNR. With sufficient stacking and a well-distributed noise source field, the result converges toward the empirical Green's function (EGF) between the two stations."
@@ -441,10 +441,10 @@ const questions = [
     category: "Green's Function",
     question: "What is a Green's function in the context of seismology?",
     options: [
-      "The frequency response curve that characterizes a seismometer's bandwidth and sensitivity",
-      "The background noise power spectrum measured at a quiet seismic station site",
-      "The transfer function of the analog-to-digital converter inside the digitizer unit",
-      "The impulse response of the Earth — the signal from a perfect point source"
+      "The frequency response curve that characterizes a seismometer's sensitivity",
+      "The background noise power spectrum measured at a quiet seismic station",
+      "The transfer function of the analog-to-digital converter in the digitizer",
+      "The impulse response of the Earth — the wavefield from a point source"
     ],
     correct: 3,
     explanation: "The Green's function is the Earth's impulse response: the complete displacement field produced by an impulsive point force at one location, as recorded at another. It encodes all propagation effects (velocity structure, attenuation, scattering). In ambient noise seismology, cross-correlating long continuous records between two stations retrieves an estimate of this function (empirical Green's function, EGF)."
@@ -473,10 +473,10 @@ const questions = [
     category: "Dispersion",
     question: "Are body waves (P, S) dispersive in a homogeneous medium?",
     options: [
-      "Yes — body waves are always dispersive regardless of the medium properties",
-      "Only P waves are dispersive; S waves travel at a constant velocity",
+      "Yes — body waves are always dispersive regardless of medium properties",
+      "Only P waves are dispersive; S waves travel at a single constant velocity",
       "No — all frequencies travel at the same velocity in a homogeneous medium",
-      "Only at frequencies above 1 Hz where attenuation causes velocity changes"
+      "Only above 1 Hz where intrinsic attenuation causes frequency-dependent velocity"
     ],
     correct: 2,
     explanation: "In a homogeneous medium, body waves propagate at a single velocity regardless of frequency (non-dispersive). Surface waves are dispersive because their sensitivity kernels extend to different depths depending on wavelength; in a vertically heterogeneous Earth, this means each frequency samples a different effective velocity."
@@ -511,10 +511,10 @@ const questions = [
     category: "Preprocessing",
     question: "What is the typical preprocessing sequence for ambient noise data before cross-correlation?",
     options: [
-      "Decimate, cross-correlate, remove trend, bandpass filter, then apply gain correction",
-      "Remove response, detrend, demean, bandpass, temporal normalization, spectral whitening",
-      "Stack all raw traces into a single stream, threshold to remove noise, then filter",
-      "Apply gain correction, rotate components, compute cross-correlations, then detrend"
+      "Decimate, cross-correlate, remove trend, bandpass filter, apply gain correction",
+      "Remove response, detrend, demean, bandpass, temporal normalization, whitening",
+      "Stack all raw traces, threshold to remove noise, then bandpass filter",
+      "Apply gain correction, rotate components, cross-correlate, then detrend"
     ],
     correct: 1,
     explanation: "Standard workflow: (1) remove instrument response, (2) detrend & demean, (3) bandpass filter, (4) temporal normalization (e.g., 1-bit or running absolute mean) to suppress earthquakes and transients, (5) spectral whitening to broaden the usable frequency band."
@@ -587,9 +587,9 @@ const questions = [
     question: "In the SEED channel naming convention (e.g., BHZ), what does the first letter represent?",
     options: [
       "The band code indicating sampling rate (B ≈ 20 sps, H ≈ 100 sps)",
-      "The sensor type such as Broadband, High-gain, or Extremely short-period",
-      "The orientation of the component (B = bottom, H = horizontal, Z = vertical)",
-      "The network code identifying which institution operates the seismic station"
+      "The sensor type (Broadband, High-gain, or Extremely short-period)",
+      "The component orientation (B = bottom, H = horizontal, Z = vertical)",
+      "The network code identifying which institution operates the station"
     ],
     correct: 0,
     explanation: "First letter = band/sampling rate: B (~10-80 sps), H (~80-250 sps), E (~80-250 sps, short-period), S (~10-80 sps, short-period), D (~250-1000 sps), L (~1 sps). Second letter = instrument type (H = high-gain seismometer, N = accelerometer). Third = orientation (Z, N, E or 1, 2, 3)."
